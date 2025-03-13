@@ -175,9 +175,6 @@ export default function QuestionBankPage() {
             >
               Banco de Questões
             </Link>
-            <Link href="/reports" className="text-sm font-medium">
-              Relatórios
-            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link href="/profile">

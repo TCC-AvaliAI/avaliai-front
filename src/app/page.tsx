@@ -13,22 +13,13 @@ import {
   Database,
   CheckCircle,
 } from "lucide-react";
+import Header from '@/components/header';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="border-b">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">AvaliAi</h1>
-          </div>
-          <Link href="/login">
-            <Button>Entrar com SUAP</Button>
-          </Link>
-        </div>
-      </header>
-      <main className="flex-1">
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1 container py-6">
         <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background to-muted">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">

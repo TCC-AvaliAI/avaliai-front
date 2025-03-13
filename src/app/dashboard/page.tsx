@@ -3,43 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FileText, Plus, Database, BarChart, Clock } from "lucide-react"
+import Header from '@/components/header';
 
 export default function DashboardPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <FileText className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">AvaliAi</h1>
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm font-medium">
-              Dashboard
-            </Link>
-            <Link href="/exams" className="text-sm font-medium">
-              Provas
-            </Link>
-            <Link href="/question-bank" className="text-sm font-medium">
-              Banco de Questões
-            </Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Link href="/profile">
-              <Button variant="ghost" size="sm">
-                Perfil
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                Sair
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
