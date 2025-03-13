@@ -1,25 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
-import { FileText, Clock, AlertCircle } from "lucide-react"
-import { useParams } from "next/navigation"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { FileText, Clock, AlertCircle } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function StudentExamPage() {
-  const params = useParams()
-  const examId = params.id
+  const params = useParams();
+  const examId = params.id;
 
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState({})
-  const [timeLeft, setTimeLeft] = useState(3600) // 60 minutes in seconds
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<any>({});
+  const [timeLeft, setTimeLeft] = useState(3600); // 60 minutes in seconds
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sample exam data
   const exam = {
@@ -69,75 +75,79 @@ export default function StudentExamPage() {
         points: 2,
       },
     ],
-  }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timer)
-          handleSubmit()
-          return 0
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [])
+    return () => clearInterval(timer);
+  }, []);
 
-  const handleAnswerChange = (questionId, answer) => {
+  const handleAnswerChange = (questionId: any, answer: any) => {
     setAnswers({
       ...answers,
       [questionId]: answer,
-    })
-  }
+    });
+  };
 
-  const handleCheckboxChange = (questionId, optionIndex, checked) => {
-    const currentAnswers = answers[questionId] || []
-    let newAnswers
+  const handleCheckboxChange = (
+    questionId: any,
+    optionIndex: any,
+    checked: any
+  ) => {
+    const currentAnswers = answers[questionId] || [];
+    let newAnswers;
 
     if (checked) {
-      newAnswers = [...currentAnswers, optionIndex]
+      newAnswers = [...currentAnswers, optionIndex];
     } else {
-      newAnswers = currentAnswers.filter((idx) => idx !== optionIndex)
+      newAnswers = currentAnswers.filter((idx: any) => idx !== optionIndex);
     }
 
     setAnswers({
       ...answers,
       [questionId]: newAnswers,
-    })
-  }
+    });
+  };
 
   const handleNext = () => {
     if (currentQuestion < exam.questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
+      setCurrentQuestion(currentQuestion + 1);
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1)
+      setCurrentQuestion(currentQuestion - 1);
     }
-  }
+  };
 
   const handleSubmit = () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     // Simulate submission
     setTimeout(() => {
-      window.location.href = "/student/results/" + examId
-    }, 1500)
-  }
+      window.location.href = "/student/results/" + examId;
+    }, 1500);
+  };
 
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`
-  }
+  const formatTime = (seconds: any) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+  };
 
-  const progress = (Object.keys(answers).length / exam.questions.length) * 100
+  const progress = (Object.keys(answers).length / exam.questions.length) * 100;
 
-  const renderQuestion = (question) => {
+  const renderQuestion = (question: any) => {
     switch (question.type) {
       case "multiple-choice":
         return (
@@ -147,15 +157,20 @@ export default function StudentExamPage() {
               value={answers[question.id] || ""}
               onValueChange={(value) => handleAnswerChange(question.id, value)}
             >
-              {question.options.map((option, index) => (
+              {question.options.map((option: any, index: any) => (
                 <div key={index} className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem value={index.toString()} id={`q${question.id}-option-${index}`} />
-                  <Label htmlFor={`q${question.id}-option-${index}`}>{option}</Label>
+                  <RadioGroupItem
+                    value={index.toString()}
+                    id={`q${question.id}-option-${index}`}
+                  />
+                  <Label htmlFor={`q${question.id}-option-${index}`}>
+                    {option}
+                  </Label>
                 </div>
               ))}
             </RadioGroup>
           </div>
-        )
+        );
       case "true-false":
         return (
           <div className="space-y-4">
@@ -164,31 +179,40 @@ export default function StudentExamPage() {
               value={answers[question.id] || ""}
               onValueChange={(value) => handleAnswerChange(question.id, value)}
             >
-              {question.options.map((option, index) => (
+              {question.options.map((option: any, index: any) => (
                 <div key={index} className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem value={index.toString()} id={`q${question.id}-option-${index}`} />
-                  <Label htmlFor={`q${question.id}-option-${index}`}>{option}</Label>
+                  <RadioGroupItem
+                    value={index.toString()}
+                    id={`q${question.id}-option-${index}`}
+                  />
+                  <Label htmlFor={`q${question.id}-option-${index}`}>
+                    {option}
+                  </Label>
                 </div>
               ))}
             </RadioGroup>
           </div>
-        )
+        );
       case "checkbox":
         return (
           <div className="space-y-4">
             <h3 className="font-medium text-lg">{question.text}</h3>
-            {question.options.map((option, index) => (
+            {question.options.map((option: any, index: any) => (
               <div key={index} className="flex items-center space-x-2 py-2">
                 <Checkbox
                   id={`q${question.id}-option-${index}`}
                   checked={(answers[question.id] || []).includes(index)}
-                  onCheckedChange={(checked) => handleCheckboxChange(question.id, index, checked)}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange(question.id, index, checked)
+                  }
                 />
-                <Label htmlFor={`q${question.id}-option-${index}`}>{option}</Label>
+                <Label htmlFor={`q${question.id}-option-${index}`}>
+                  {option}
+                </Label>
               </div>
             ))}
           </div>
-        )
+        );
       case "essay":
         return (
           <div className="space-y-4">
@@ -200,11 +224,11 @@ export default function StudentExamPage() {
               onChange={(e) => handleAnswerChange(question.id, e.target.value)}
             />
           </div>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -219,9 +243,19 @@ export default function StudentExamPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-muted px-3 py-1 rounded-md">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className={`font-medium ${timeLeft < 300 ? "text-red-500" : ""}`}>{formatTime(timeLeft)}</span>
+              <span
+                className={`font-medium ${
+                  timeLeft < 300 ? "text-red-500" : ""
+                }`}
+              >
+                {formatTime(timeLeft)}
+              </span>
             </div>
-            <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
+            <Button
+              variant="destructive"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Enviando..." : "Finalizar Prova"}
             </Button>
           </div>
@@ -235,9 +269,15 @@ export default function StudentExamPage() {
           <CardContent>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Disciplina: {exam.subject}</p>
-                <p className="text-sm text-muted-foreground">Turma: {exam.grade}</p>
-                <p className="text-sm text-muted-foreground">Duração: {exam.duration} minutos</p>
+                <p className="text-sm text-muted-foreground">
+                  Disciplina: {exam.subject}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Turma: {exam.grade}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Duração: {exam.duration} minutos
+                </p>
               </div>
               <div className="space-y-2 min-w-[200px]">
                 <div className="flex justify-between text-sm">
@@ -251,7 +291,8 @@ export default function StudentExamPage() {
             <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-6">
               <AlertCircle className="h-5 w-5 text-yellow-500" />
               <p className="text-sm text-yellow-700">
-                Não feche ou atualize esta página. Suas respostas serão perdidas.
+                Não feche ou atualize esta página. Suas respostas serão
+                perdidas.
               </p>
             </div>
 
@@ -261,14 +302,20 @@ export default function StudentExamPage() {
               </h2>
               <p className="text-sm text-muted-foreground">
                 {exam.questions[currentQuestion].points}{" "}
-                {exam.questions[currentQuestion].points === 1 ? "ponto" : "pontos"}
+                {exam.questions[currentQuestion].points === 1
+                  ? "ponto"
+                  : "pontos"}
               </p>
             </div>
 
             {renderQuestion(exam.questions[currentQuestion])}
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={handlePrevious} disabled={currentQuestion === 0}>
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentQuestion === 0}
+            >
               Anterior
             </Button>
             <div className="flex gap-2">
@@ -287,8 +334,16 @@ export default function StudentExamPage() {
           {exam.questions.map((_, index) => (
             <Button
               key={index}
-              variant={currentQuestion === index ? "default" : answers[index + 1] ? "outline" : "ghost"}
-              className={`h-10 w-10 p-0 ${answers[index + 1] ? "border-primary" : ""}`}
+              variant={
+                currentQuestion === index
+                  ? "default"
+                  : answers[index + 1]
+                  ? "outline"
+                  : "ghost"
+              }
+              className={`h-10 w-10 p-0 ${
+                answers[index + 1] ? "border-primary" : ""
+              }`}
               onClick={() => setCurrentQuestion(index)}
             >
               {index + 1}
@@ -297,6 +352,5 @@ export default function StudentExamPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
-

@@ -1,7 +1,18 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, FileText, BarChart, Database, CheckCircle } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  BookOpen,
+  FileText,
+  BarChart,
+  Database,
+  CheckCircle,
+} from "lucide-react";
 
 export default function Home() {
   return (
@@ -26,7 +37,8 @@ export default function Home() {
                   Crie e gerencie provas com inteligência artificial
                 </h1>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Simplifique a criação, aplicação e correção de provas com nossa plataforma intuitiva e inteligente.
+                  Simplifique a criação, aplicação e correção de provas com
+                  nossa plataforma intuitiva e inteligente.
                 </p>
               </div>
               <div className="space-x-4">
@@ -49,9 +61,12 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Recursos principais</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                  Recursos principais
+                </h2>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Conheça as ferramentas que tornam o AvaliAi a escolha ideal para educadores.
+                  Conheça as ferramentas que tornam o AvaliAi a escolha ideal
+                  para educadores.
                 </p>
               </div>
             </div>
@@ -61,7 +76,8 @@ export default function Home() {
                   <FileText className="h-6 w-6 text-primary mb-2" />
                   <CardTitle>Criação de provas</CardTitle>
                   <CardDescription>
-                    Crie provas personalizadas com opções para aplicação online ou impressa.
+                    Crie provas personalizadas com opções para aplicação online
+                    ou impressa.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -70,7 +86,8 @@ export default function Home() {
                   <CheckCircle className="h-6 w-6 text-primary mb-2" />
                   <CardTitle>Correção automática</CardTitle>
                   <CardDescription>
-                    Correção automática de questões objetivas e sugestões de IA para questões subjetivas.
+                    Correção automática de questões objetivas e sugestões de IA
+                    para questões subjetivas.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -79,15 +96,9 @@ export default function Home() {
                   <Database className="h-6 w-6 text-primary mb-2" />
                   <CardTitle>Banco de questões</CardTitle>
                   <CardDescription>
-                    Organize e reutilize questões por disciplina, série e nível de dificuldade.
+                    Organize e reutilize questões por disciplina, série e nível
+                    de dificuldade.
                   </CardDescription>
-                </CardHeader>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <BarChart className="h-6 w-6 text-primary mb-2" />
-                  <CardTitle>Relatórios de desempenho</CardTitle>
-                  <CardDescription>Acompanhe o progresso dos alunos com relatórios detalhados.</CardDescription>
                 </CardHeader>
               </Card>
             </div>
@@ -102,6 +113,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
-
