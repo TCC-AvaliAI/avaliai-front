@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,14 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  BookOpen,
-  FileText,
-  BarChart,
-  Database,
-  CheckCircle,
-} from "lucide-react";
-import Header from '@/components/header';
+import { FileText, Database, CheckCircle } from "lucide-react";
+import { signIn } from "next-auth/react";
+
+import Header from "@/components/header";
 
 export default function Home() {
   return (
@@ -33,11 +31,14 @@ export default function Home() {
                 </p>
               </div>
               <div className="space-x-4">
-                <Link href="/login">
-                  <Button size="lg" className="mt-4">
-                    Começar agora
-                  </Button>
-                </Link>
+                <Button
+                  size="lg"
+                  className="mt-4"
+                  onClick={() => signIn("suap")}
+                >
+                  Começar agora
+                </Button>
+
                 <Link href="#features">
                   <Button variant="outline" size="lg" className="mt-4">
                     Saiba mais
