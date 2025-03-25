@@ -7,7 +7,7 @@ import Header from '@/components/header';
 
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-hidden">
       <Header />
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">

@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import axios from "axios";
+import api from "@/lib/axios";
 
 export const { signIn, signOut, auth, handlers } = NextAuth({
   providers: [
@@ -54,7 +54,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
 
       if (session.accessToken && !token.isAuthenticated) {
         try {
-          await axios.post(`${process.env.API_URL}/api/user/login/suap/`, {
+          await api.post('/user/login/suap/', {
             access_token: session.accessToken,
           });
           token.isAuthenticated = true;

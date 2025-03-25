@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +13,6 @@ import { FileText, Database, CheckCircle } from "lucide-react";
 import Header from "@/components/header";
 
 export default function MainContent() {
-  const { data: session } = useSession();
-
   return (
     <div className="flex min-h-screen flex-col">
       <Header />

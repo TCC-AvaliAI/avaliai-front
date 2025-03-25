@@ -1,8 +1,32 @@
-import Link from 'next/link';
-import { FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+"use client";
+
+import Link from "next/link";
+import { FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { signIn, signOut } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useSession } from "next-auth/react";
+import api from "@/lib/axios";
+import axios from "axios";
 
 const Header = () => {
+  const { data: session } = useSession();
+  const userName = session?.name;
+  const userAvatar = session?.image;
+
+  const handleLogin = () => {
+    signIn("suap");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/user/logout/");
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+    await signOut({ callbackUrl: "/" });
+  };
+
   return (
     <header className="sticky top-0 z-10 border-b bg-background">
       <div className="container flex h-16 items-center justify-between py-4">
@@ -23,13 +47,25 @@ const Header = () => {
             Banco de Questões
           </Link>
         </nav>
-        <div className="flex items-center gap-2">
-          <Link href="/profile">
-            <Button variant="ghost" size="sm">Perfil</Button>
-          </Link>
-          <Link href="/">
-            <Button variant="ghost" size="sm">Sair</Button>
-          </Link>
+        <div className="flex items-center gap-4">
+          {session ? (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={userAvatar} alt={userName} />
+                <AvatarFallback>{userName}</AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium hidden md:inline-block">
+                Olá, {userName?.toLocaleLowerCase()}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                Sair
+              </Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={handleLogin}>
+              Entrar
+            </Button>
+          )}
         </div>
       </div>
     </header>
