@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+import axios from "axios";
 
 export const { signIn, signOut, auth, handlers } = NextAuth({
   providers: [
@@ -51,6 +51,21 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       session.email = token.email;
       session.image = token.image;
       session.idToken = token.idToken;
+
+      if (session.accessToken && !token.isAuthenticated) {
+        try {
+          await axios.post(`${process.env.API_URL}/api/user/login/suap/`, {
+            access_token: session.accessToken,
+          });
+          token.isAuthenticated = true;
+        } catch (error: any) {
+          console.error(
+            "Erro ao enviar o accessToken para o backend:",
+            error.message
+          );
+        }
+      }
+
       return session;
     },
   },
