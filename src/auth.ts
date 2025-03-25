@@ -1,6 +1,7 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 
-export const authOptions: NextAuthOptions = {
+export const { signIn, signOut, auth, handlers } = NextAuth({
   providers: [
     {
       id: "suap",
@@ -25,24 +26,32 @@ export const authOptions: NextAuthOptions = {
           avatar: profile.foto,
         };
       },
-      httpOptions: {
+      options: {
         timeout: 10000,
       },
     },
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }) {
-      console.log(user);
-      if (user) {
-        token.id = user.id;
+    async jwt({ token, account, profile }) {
+      if (account && profile) {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.name = profile.nome as string;
+        token.email = profile.email_google_classroom as string;
+        token.image = profile.foto as string;
+        token.idToken = account.id_token;
       }
       return token;
     },
     async session({ session, token }) {
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.name = token.name;
+      session.email = token.email;
+      session.image = token.image;
+      session.idToken = token.idToken;
       return session;
     },
   },
-};
-
-export default NextAuth(authOptions);
+});
