@@ -54,9 +54,11 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
 
       if (session.accessToken && !token.isAuthenticated) {
         try {
-          await api.post('/user/login/suap/', {
+          const response = await api.post("/user/login/suap/", {
             access_token: session.accessToken,
           });
+          const { user } = response.data;
+          session.userId = user.id;
           token.isAuthenticated = true;
         } catch (error: any) {
           console.error(
