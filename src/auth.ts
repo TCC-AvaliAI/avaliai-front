@@ -45,21 +45,20 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
-      session.refreshToken = token.refreshToken;
-      session.name = token.name;
-      session.email = token.email;
-      session.image = token.image;
-      session.idToken = token.idToken;
-
-      if (session.accessToken && !token.isAuthenticated) {
+      if (token.accessToken) {
         try {
           const response = await api.post("/user/login/suap/", {
-            access_token: session.accessToken,
+            access_token: token.accessToken,
           });
           const { user } = response.data;
-          session.userId = user.id;
+          session.id = user.id;
           token.isAuthenticated = true;
+          session.accessToken = token.accessToken;
+          session.refreshToken = token.refreshToken;
+          session.name = token.name;
+          session.email = token.email;
+          session.image = token.image;
+          session.idToken = token.idToken;
         } catch (error: any) {
           console.error(
             "Erro ao enviar o accessToken para o backend:",

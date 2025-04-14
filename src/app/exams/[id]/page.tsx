@@ -38,15 +38,11 @@ import {
   Calendar,
   Users,
   BarChart,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
   ChevronLeft,
   Send,
 } from "lucide-react";
 import Header from "@/components/header";
 
-// Definição dos tipos
 type ExamStatus = "draft" | "scheduled" | "active" | "completed" | "archived";
 type DifficultyLevel = "easy" | "medium" | "hard";
 type QuestionType = "multiple-choice" | "true-false" | "checkbox" | "essay";
@@ -101,7 +97,6 @@ export default function ExamDetailsPage() {
   const [emailList, setEmailList] = useState("");
   const [message, setMessage] = useState("");
 
-  // Dados simulados do exame
   const exam: Exam = {
     id: examId,
     title: "Avaliação de Matemática - 2º Bimestre",
@@ -233,7 +228,6 @@ export default function ExamDetailsPage() {
     completionRate: 50,
   };
 
-  // Função para renderizar o badge de status
   const renderStatusBadge = (status: ExamStatus) => {
     switch (status) {
       case "draft":
@@ -251,7 +245,6 @@ export default function ExamDetailsPage() {
     }
   };
 
-  // Função para renderizar o badge de dificuldade
   const renderDifficultyBadge = (difficulty: DifficultyLevel) => {
     switch (difficulty) {
       case "easy":
@@ -277,7 +270,6 @@ export default function ExamDetailsPage() {
     }
   };
 
-  // Função para renderizar o status do aluno
   const renderStudentStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -293,7 +285,6 @@ export default function ExamDetailsPage() {
     }
   };
 
-  // Função para renderizar o tipo de questão
   const getQuestionTypeLabel = (type: QuestionType) => {
     switch (type) {
       case "multiple-choice":
