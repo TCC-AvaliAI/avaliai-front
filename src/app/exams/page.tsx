@@ -21,55 +21,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
-  FileText,
-  Plus,
-  Search,
-  Calendar,
-  Clock,
-  Users,
-  Filter,
-  MoreHorizontal,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { FileText, Plus, Search, Clock, Filter } from "lucide-react";
 import Header from "@/components/header";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useSession } from "next-auth/react";
-
-type ExamStatus = "APPLIED" | "PENDING" | "CANCELLED" | "ARCHIVED";
-type DifficultyLevel = "easy" | "medium" | "hard";
-
-interface Exam {
-  id: string;
-  user: string;
-  discipline_name: string;
-  classroom_name: string;
-  title: string;
-  duration: number;
-  score: number;
-  created_at: string;
-  applied_at: string | null;
-  qr_code: string | null;
-  description: string;
-  theme: string;
-  was_generated_by_ai: boolean;
-  difficulty: DifficultyLevel;
-  status: ExamStatus;
-  discipline: string;
-  classroom: string;
-  questions: {
-    id: string;
-    title: string;
-  }[];
-}
+import { ExamActionsMenu } from "@/components/exam/exam-actions-menu";
+import { DifficultyLevel, Exam, ExamStatus } from "@/@types/ExamProps";
 
 export default function ExamsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,7 +44,7 @@ export default function ExamsPage() {
     ? exams.filter((exam) => {
         const matchesSearch =
           exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exam.discipline_name.toLowerCase().includes(searchTerm.toLowerCase());
+          exam.discipline.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesSubject =
           subjectFilter === "all" || exam.discipline === subjectFilter;
         const matchesStatus =
@@ -228,8 +186,6 @@ export default function ExamsPage() {
               Arquivadas ({archivedExams.length})
             </TabsTrigger>
           </TabsList>
-
-          {/* Aba "Todas" */}
           <TabsContent value="all">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredExams.length > 0 ? (
@@ -238,30 +194,7 @@ export default function ExamsPage() {
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-lg">{exam.title}</CardTitle>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <Link href={`/exams/${exam.id}`}>
-                              <DropdownMenuItem>Ver detalhes</DropdownMenuItem>
-                            </Link>
-                            <Link href={`/exams/edit/${exam.id}`}>
-                              <DropdownMenuItem>Editar</DropdownMenuItem>
-                            </Link>
-                            <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                            <DropdownMenuItem>Baixar</DropdownMenuItem>
-                            <DropdownMenuItem>Gerar QR Code</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
-                              Arquivar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <ExamActionsMenu examId={exam.id} />
                       </div>
                       <CardDescription className="flex flex-wrap gap-2 mt-1">
                         {renderStatusBadge(exam.status)}
@@ -274,13 +207,13 @@ export default function ExamsPage() {
                           <span className="w-24 text-muted-foreground">
                             Disciplina:
                           </span>
-                          <span>{exam.discipline_name}</span>
+                          <span>{exam.discipline}</span>
                         </div>
                         <div className="flex items-center">
                           <span className="w-24 text-muted-foreground">
                             Turma:
                           </span>
-                          <span>{exam.classroom_name}</span>
+                          <span>{exam.classroom}</span>
                         </div>
                         <div className="flex items-center">
                           <span className="w-24 text-muted-foreground">
@@ -288,6 +221,21 @@ export default function ExamsPage() {
                           </span>
                           <span>
                             {exam.questions.length} ({exam.score} pontos)
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="w-24 text-muted-foreground">
+                            Data de criação:
+                          </span>
+                          <span className="flex items-center gap-1">
+                            {new Date(exam.created_at).toLocaleDateString(
+                              "pt-BR",
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              }
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center">
@@ -339,7 +287,6 @@ export default function ExamsPage() {
             </div>
           </TabsContent>
 
-          {/* Abas para cada status */}
           {[
             { value: "APPLIED", exams: appliedExams, title: "Aplicadas" },
             { value: "PENDING", exams: pendingExams, title: "Pendentes" },
@@ -356,34 +303,10 @@ export default function ExamsPage() {
                           <CardTitle className="text-lg">
                             {exam.title}
                           </CardTitle>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <Link href={`/exams/${exam.id}`}>
-                                <DropdownMenuItem>
-                                  Ver detalhes
-                                </DropdownMenuItem>
-                              </Link>
-                              <Link href={`/exams/edit/${exam.id}`}>
-                                <DropdownMenuItem>Editar</DropdownMenuItem>
-                              </Link>
-                              <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                              <DropdownMenuItem>Baixar</DropdownMenuItem>
-                              <DropdownMenuItem>Gerar QR Code</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                Arquivar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <ExamActionsMenu examId={exam.id} />
                         </div>
                         <CardDescription className="flex flex-wrap gap-2 mt-1">
+                          {renderStatusBadge(exam.status)}
                           {renderDifficultyBadge(exam.difficulty)}
                         </CardDescription>
                       </CardHeader>
@@ -393,13 +316,13 @@ export default function ExamsPage() {
                             <span className="w-24 text-muted-foreground">
                               Disciplina:
                             </span>
-                            <span>{exam.discipline_name}</span>
+                            <span>{exam.discipline}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-24 text-muted-foreground">
                               Turma:
                             </span>
-                            <span>{exam.classroom_name}</span>
+                            <span>{exam.classroom}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-24 text-muted-foreground">
@@ -408,6 +331,12 @@ export default function ExamsPage() {
                             <span>
                               {exam.questions.length} ({exam.score} pontos)
                             </span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="w-24 text-muted-foreground">
+                              Duração:
+                            </span>
+                            <span>{exam.duration} minutos</span>
                           </div>
                           {exam.status === "PENDING" && exam.applied_at && (
                             <div className="flex items-center">
