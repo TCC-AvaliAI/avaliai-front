@@ -77,23 +77,24 @@ export default function ExamsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const { data: session } = useSession();
 
-  const { data: exams, error } = useSWR<Exam[]>(
-    `/exams/?user=${session?.id}`,
+  const { data: exams = [], error } = useSWR<Exam[]>(
+    session?.id ? `/exams/?user=${session.id}` : null,
     fetcher
   );
 
-  const filteredExams =
-    exams?.filter((exam) => {
-      const matchesSearch =
-        exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exam.discipline_name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesSubject =
-        subjectFilter === "all" || exam.discipline === subjectFilter;
-      const matchesStatus =
-        statusFilter === "all" || exam.status === statusFilter;
+  const filteredExams = Array.isArray(exams)
+    ? exams.filter((exam) => {
+        const matchesSearch =
+          exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          exam.discipline_name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSubject =
+          subjectFilter === "all" || exam.discipline === subjectFilter;
+        const matchesStatus =
+          statusFilter === "all" || exam.status === statusFilter;
 
-      return matchesSearch && matchesSubject && matchesStatus;
-    }) ?? [];
+        return matchesSearch && matchesSubject && matchesStatus;
+      })
+    : [];
 
   const appliedExams = filteredExams.filter(
     (exam) => exam.status === "APPLIED"
