@@ -28,6 +28,7 @@ import { fetcher } from "@/lib/fetcher";
 import { useSession } from "next-auth/react";
 import { ExamActionsMenu } from "@/components/exam/exam-actions-menu";
 import { DifficultyLevel, Exam, ExamStatus } from "@/@types/ExamProps";
+import { Loading } from "@/components/loading/page";
 
 export default function ExamsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,24 +36,24 @@ export default function ExamsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const { data: session } = useSession();
 
-  const { data: exams = [], error } = useSWR<Exam[]>(
+  const { data: exams = [], isLoading } = useSWR<Exam[]>(
     session?.id ? `/exams/?user=${session.id}` : null,
     fetcher
   );
 
-  const filteredExams = Array.isArray(exams)
-    ? exams.filter((exam) => {
-        const matchesSearch =
-          exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exam.discipline.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesSubject =
-          subjectFilter === "all" || exam.discipline === subjectFilter;
-        const matchesStatus =
-          statusFilter === "all" || exam.status === statusFilter;
+  if (isLoading) return <Loading />;
 
-        return matchesSearch && matchesSubject && matchesStatus;
-      })
-    : [];
+  const filteredExams = exams.filter((exam) => {
+    const matchesSearch =
+      exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exam.discipline.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSubject =
+      subjectFilter === "all" || exam.discipline === subjectFilter;
+    const matchesStatus =
+      statusFilter === "all" || exam.status === statusFilter;
+
+    return matchesSearch && matchesSubject && matchesStatus;
+  });
 
   const appliedExams = filteredExams.filter(
     (exam) => exam.status === "APPLIED"

@@ -1,5 +1,5 @@
 export interface QuestionProps {
-  id: string;
+  id?: string;
   title: string;
   options: string[];
   answer: number;

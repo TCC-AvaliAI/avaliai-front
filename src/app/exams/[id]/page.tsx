@@ -32,12 +32,14 @@ import {
   Clock,
   ChevronLeft,
   Send,
+  Star,
 } from "lucide-react";
 import Header from "@/components/header";
 import { Exam, ExamStatus, DifficultyLevel } from "@/@types/ExamProps";
 import { QuestionProps } from "@/@types/QuestionProps";
 import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
+import { Loading } from "@/components/loading/page";
 
 const renderStatusBadge = (status: ExamStatus) => {
   switch (status) {
@@ -106,7 +108,8 @@ export default function ExamDetailsPage() {
   const [emailList, setEmailList] = useState("");
   const [message, setMessage] = useState("");
 
-  const { data: exam, error } = useSWR<Exam>(`/exams/${examId}`, fetcher);
+  const { data: exam, isLoading } = useSWR<Exam>(`/exams/${examId}`, fetcher);
+  if (isLoading) return <Loading />;
 
   if (!exam) {
     return (
@@ -172,18 +175,6 @@ export default function ExamDetailsPage() {
                         Turma:
                       </span>
                       <span className="text-sm">{exam.classroom}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-muted-foreground">
-                        Duração:
-                      </span>
-                      <span className="text-sm">{exam.duration} minutos</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-muted-foreground">
-                        Pontuação total:
-                      </span>
-                      <span className="text-sm">{exam.score} pontos</span>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -347,7 +338,7 @@ export default function ExamDetailsPage() {
               <CardHeader>
                 <CardTitle>Resumo</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col gap-4">
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <Clock className="h-5 w-5 text-muted-foreground mr-2" />
@@ -355,6 +346,17 @@ export default function ExamDetailsPage() {
                       <p className="text-sm font-medium">Duração</p>
                       <p className="text-sm text-muted-foreground">
                         {exam.duration} minutos
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <Star className="h-5 w-5 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Pontuação</p>
+                      <p className="text-sm text-muted-foreground">
+                        {exam.score} ponto(s)
                       </p>
                     </div>
                   </div>

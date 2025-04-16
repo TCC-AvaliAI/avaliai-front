@@ -7,14 +7,14 @@ const api = axios.create({
   },
 });
 
-api.interceptors.request.use(async (config) => {
-  if (typeof window !== "undefined") {
-    const session = await fetch("/api/auth/session").then((res) => res.json());
-    if (session?.accessToken) {
-      config.headers.Authorization = `Bearer ${session.accessToken}`;
-    }
-  }
-  return config;
-});
+// api.interceptors.request.use(async (config) => {
+//   if (typeof window !== "undefined") {
+//     const session = await fetch("/api/auth/session").then((res) => res.json());
+//     if (session?.accessToken) {
+//       config.headers.Authorization = `Bearer ${session.accessToken}`;
+//     }
+//   }
+//   return config;
+// });
 
 export default api;

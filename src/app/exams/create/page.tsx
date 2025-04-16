@@ -31,7 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
 
 // Definição dos tipos
-type QuestionType = "multiple-choice" | "true-false" | "checkbox" | "essay";
+type QuestionType = "multiple-choice" | "true-false" | "essay";
 type DifficultyLevel = "easy" | "medium" | "hard";
 
 interface Option {
@@ -69,7 +69,6 @@ interface SuggestedQuestion {
 }
 
 export default function CreateExamPage() {
-  // Dados simulados para sugestões de questões
   const suggestedQuestions: Record<DifficultyLevel, SuggestedQuestion[]> = {
     easy: [
       {
@@ -105,7 +104,7 @@ export default function CreateExamPage() {
       {
         id: 5,
         text: "Quais são os estados físicos da matéria?",
-        type: "checkbox",
+        type: "multiple-choice",
         difficulty: "medium",
         subject: "Ciências",
       },
@@ -135,7 +134,7 @@ export default function CreateExamPage() {
       {
         id: 9,
         text: "Quais dos seguintes compostos são ácidos fortes?",
-        type: "checkbox",
+        type: "essay",
         difficulty: "hard",
         subject: "Química",
       },
@@ -190,14 +189,6 @@ export default function CreateExamPage() {
         { id: 2, text: "Falso" },
       ];
       newQuestion.answer = "";
-    } else if (type === "checkbox") {
-      newQuestion.options = [
-        { id: 1, text: "" },
-        { id: 2, text: "" },
-        { id: 3, text: "" },
-        { id: 4, text: "" },
-      ];
-      newQuestion.answers = [];
     } else if (type === "essay") {
       newQuestion.answer = "";
       newQuestion.maxLength = 500;
@@ -228,14 +219,6 @@ export default function CreateExamPage() {
         { id: 2, text: "Falso" },
       ];
       newQuestion.answer = "";
-    } else if (question.type === "checkbox") {
-      newQuestion.options = [
-        { id: 1, text: "Opção 1" },
-        { id: 2, text: "Opção 2" },
-        { id: 3, text: "Opção 3" },
-        { id: 4, text: "Opção 4" },
-      ];
-      newQuestion.answers = [];
     } else if (question.type === "essay") {
       newQuestion.answer = "";
       newQuestion.maxLength = 500;
@@ -399,54 +382,6 @@ export default function CreateExamPage() {
             </div>
           </div>
         );
-      case "checkbox":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor={`question-${question.id}-text`}>Pergunta</Label>
-              <Textarea
-                id={`question-${question.id}-text`}
-                placeholder="Digite a pergunta aqui..."
-                value={question.text}
-                onChange={(e) =>
-                  updateQuestionText(question.id, e.target.value)
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Opções (marque as corretas)</Label>
-              {question.options?.map((option) => (
-                <div
-                  key={option.id}
-                  className="flex items-center space-x-2 mb-2"
-                >
-                  <Checkbox
-                    id={`q${question.id}-option-${option.id}`}
-                    checked={(question.answers || []).includes(option.id)}
-                    onCheckedChange={(checked) =>
-                      updateQuestionCheckboxAnswer(
-                        question.id,
-                        option.id,
-                        checked === true
-                      )
-                    }
-                  />
-                  <Input
-                    placeholder={`Opção ${option.id}`}
-                    value={option.text}
-                    onChange={(e) =>
-                      updateQuestionOption(
-                        question.id,
-                        option.id,
-                        e.target.value
-                      )
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        );
       case "essay":
         return (
           <div className="space-y-4">
@@ -568,23 +503,7 @@ export default function CreateExamPage() {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="exam-online"
-                        checked={examInfo.isOnline}
-                        onCheckedChange={(checked) =>
-                          setExamInfo({ ...examInfo, isOnline: checked })
-                        }
-                      />
-                      <Label htmlFor="exam-online">Prova Online</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {examInfo.isOnline
-                        ? "A prova será aplicada online e as respostas serão coletadas digitalmente."
-                        : "A prova será impressa para aplicação presencial."}
-                    </p>
-                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="exam-description">
                       Descrição/Instruções
@@ -655,8 +574,8 @@ export default function CreateExamPage() {
 
             <div className="flex justify-center">
               <Card className="w-full">
-                <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <CardContent className="justify-center items-center">
+                  <div className="flex justify-around">
                     <Button
                       variant="outline"
                       onClick={() => addQuestion("multiple-choice")}
@@ -670,13 +589,6 @@ export default function CreateExamPage() {
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       Verdadeiro/Falso
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => addQuestion("checkbox")}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Caixas de Seleção
                     </Button>
                     <Button
                       variant="outline"
@@ -723,8 +635,6 @@ export default function CreateExamPage() {
                                 ? "Múltipla Escolha"
                                 : question.type === "true-false"
                                 ? "Verdadeiro/Falso"
-                                : question.type === "checkbox"
-                                ? "Caixas de Seleção"
                                 : "Dissertativa"}
                             </p>
                           </div>
