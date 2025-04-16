@@ -7,4 +7,5 @@ export interface QuestionProps {
   score: number;
   type: "MC" | "TF" | "ES";
   user: string;
+  created_at: string;
 }

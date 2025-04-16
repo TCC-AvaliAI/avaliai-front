@@ -40,6 +40,8 @@ import { QuestionProps } from "@/@types/QuestionProps";
 import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
 import { Loading } from "@/components/loading/page";
+import QRCode from "react-qr-code";
+import api from "@/lib/axios";
 
 const renderStatusBadge = (status: ExamStatus) => {
   switch (status) {
@@ -104,12 +106,20 @@ export default function ExamDetailsPage() {
   const params = useParams();
   const examId = params.id as string;
   const [showQrCode, setShowQrCode] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
-  const [emailList, setEmailList] = useState("");
-  const [message, setMessage] = useState("");
 
   const { data: exam, isLoading } = useSWR<Exam>(`/exams/${examId}`, fetcher);
   if (isLoading) return <Loading />;
+
+  async function handleGenerateQRCode(id: string) {
+    try {
+      const apiFront = process.env.NEXT_PUBLIC_URL;
+      await api.patch(`/exams/${id}/qrcode/`, {
+        qr_code: `${apiFront}/exams/${id}`,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   if (!exam) {
     return (
@@ -225,10 +235,6 @@ export default function ExamDetailsPage() {
                       Editar
                     </Button>
                   </Link>
-                  <Button variant="outline" size="sm">
-                    <Download className="mr-2 h-4 w-4" />
-                    Baixar
-                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -236,14 +242,6 @@ export default function ExamDetailsPage() {
                   >
                     <QrCode className="mr-2 h-4 w-4" />
                     QR Code
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowShareDialog(true)}
-                  >
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Compartilhar
                   </Button>
                 </div>
               </CardFooter>
@@ -325,14 +323,20 @@ export default function ExamDetailsPage() {
                           </div>
                         )}
 
-                        {question.type === "ES" && (
-                          <div className="pl-4 mt-2">
-                            <p className="text-sm text-muted-foreground italic">
-                              Questão dissertativa - correção manual ou
-                              assistida por IA
-                            </p>
-                          </div>
-                        )}
+                        {question.type === "ES" &&
+                          (question.answer_text ? (
+                            <div className="pl-4 mt-2">
+                              <p className="text-sm text-muted-foreground italic">
+                                {question.answer_text}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="pl-4 mt-2">
+                              <p className="text-sm text-muted-foreground italic">
+                                Não existe uma resposta cadastrada para essa questão
+                              </p>
+                            </div>
+                          ))}
                       </div>
                     ))}
                   </CardContent>
@@ -385,13 +389,13 @@ export default function ExamDetailsPage() {
                   <Download className="mr-2 h-4 w-4" />
                   Baixar Prova (PDF)
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={() => handleGenerateQRCode(exam.id)}
+                >
                   <QrCode className="mr-2 h-4 w-4" />
                   Gerar QR Code
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Compartilhar Prova
                 </Button>
               </CardContent>
             </Card>
@@ -410,13 +414,7 @@ export default function ExamDetailsPage() {
           </DialogHeader>
           <div className="flex justify-center py-4">
             {exam.qr_code ? (
-              <div className="w-64 h-64 bg-muted flex items-center justify-center">
-                <img
-                  src={exam.qr_code}
-                  alt="QR Code da prova"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <QRCode value={exam.qr_code} />
             ) : (
               <div className="text-center text-muted-foreground">
                 Esta prova não possui um QR code gerado.
@@ -425,50 +423,6 @@ export default function ExamDetailsPage() {
           </div>
           <DialogFooter>
             <Button onClick={() => setShowQrCode(false)}>Fechar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog para Compartilhar */}
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Compartilhar Prova</DialogTitle>
-            <DialogDescription>
-              Envie a prova para os alunos por email.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="emails">Emails dos alunos</Label>
-              <Textarea
-                id="emails"
-                placeholder="Digite os emails separados por vírgula ou linha"
-                value={emailList}
-                onChange={(e) => setEmailList(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Exemplo: aluno1@escola.edu, aluno2@escola.edu
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="message">Mensagem (opcional)</Label>
-              <Textarea
-                id="message"
-                placeholder="Digite uma mensagem para os alunos"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowShareDialog(false)} variant="outline">
-              Cancelar
-            </Button>
-            <Button>
-              <Send className="mr-2 h-4 w-4" />
-              Enviar
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -18,6 +18,16 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useSession } from "next-auth/react";
 import { Exam } from "@/@types/ExamProps";
+import { QuestionProps } from "@/@types/QuestionProps";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Loading } from "@/components/loading/page";
 
 interface ExamsDetails {
   total_exams: number;
@@ -27,7 +37,7 @@ interface ExamsDetails {
   applied_last_month: number;
   total_exams_applied: number;
   recent_exams: Exam[];
-  next_exams_applications: Exam[];
+  recent_questions: QuestionProps[];
   total_questions_last_month: number;
   total_questions: number;
   total_exams_generated_by_ai: number;
@@ -35,12 +45,17 @@ interface ExamsDetails {
 }
 
 export default function DashboardPage() {
+  const questionType = {
+    MC: "Múltipla Escolha",
+    TF: "Verdadeiro ou Falso",
+    ES: "Discursiva",
+  };
   const { data: session } = useSession();
   const { data: examsDetails, isLoading } = useSWR<ExamsDetails>(
     session?.id ? `/exams/details/` : null,
     fetcher
   );
-
+  if (isLoading) return <Loading />;
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
       <Header />
@@ -116,8 +131,8 @@ export default function DashboardPage() {
                 {examsDetails?.total_exams_generated_by_ai}
               </div>
               <p className="text-xs text-muted-foreground">
-                +{examsDetails?.total_exams_generated_by_ai_last_month} no último
-                mês
+                +{examsDetails?.total_exams_generated_by_ai_last_month} no
+                último mês
               </p>
             </CardContent>
           </Card>
@@ -126,7 +141,7 @@ export default function DashboardPage() {
         <Tabs defaultValue="recent" className="space-y-4">
           <TabsList>
             <TabsTrigger value="recent">Provas Recentes</TabsTrigger>
-            <TabsTrigger value="upcoming">Próximas Aplicações</TabsTrigger>
+            <TabsTrigger value="upcoming">Questões Recentes</TabsTrigger>
           </TabsList>
           <TabsContent value="recent" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -161,37 +176,56 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
           <TabsContent value="upcoming" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {examsDetails?.next_exams_applications.map((exam, index) => (
-                <Card key={index}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{exam.title}</CardTitle>
-                    <CardDescription>
-                      Criação:{" "}
-                      {new Date(exam.created_at).toLocaleDateString("pt-BR", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between text-sm">
-                      <span>Status: {exam.status}</span>
-                      <span>Dificuldade: {exam.difficulty}</span>
-                      <span>Disciplina: {exam.discipline}</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Link href={`/exams/${index + 3}`} className="w-full">
-                      <Button variant="outline" className="w-full">
-                        Ver detalhes
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            <Table className="overflow-hidden">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="max-w-xs break-words whitespace-normal">
+                    Título
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal">
+                    Criação
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal">
+                    Tipo
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal">
+                    Resposta Correta
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal">
+                    Pontuação
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {examsDetails?.recent_questions.map((question, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {question.title}
+                    </TableCell>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {new Date(question.created_at).toLocaleDateString(
+                        "pt-BR",
+                        {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        }
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {questionType[question.type]}
+                    </TableCell>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {question.options[question.answer] ||
+                        question.answer_text}
+                    </TableCell>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {question.score}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </TabsContent>
         </Tabs>
       </main>
