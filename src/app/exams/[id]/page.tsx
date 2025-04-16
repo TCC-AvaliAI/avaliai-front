@@ -176,6 +176,12 @@ export default function ExamDetailsPage() {
                       </span>
                       <span className="text-sm">{exam.classroom}</span>
                     </div>
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-muted-foreground">
+                        Tema:
+                      </span>
+                      <span className="text-sm">{exam.theme}</span>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center">
@@ -196,16 +202,18 @@ export default function ExamDetailsPage() {
                         </span>
                       </div>
                     )}
-                    {exam.applied_at && (
-                      <div className="flex items-center">
-                        <span className="w-32 text-sm text-muted-foreground">
-                          Agendada para:
-                        </span>
-                        <span className="text-sm">
-                          {formatDate(exam.applied_at)}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-muted-foreground">
+                        Dificuldade:
+                      </span>
+                      <span className="text-sm">{exam.difficulty}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="w-32 text-sm text-muted-foreground">
+                        Status:
+                      </span>
+                      <span className="text-sm">{exam.status}</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>

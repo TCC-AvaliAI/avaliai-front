@@ -1,11 +1,46 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FileText, Plus, Database, BarChart, Clock } from "lucide-react"
-import Header from '@/components/header';
+"use client";
+
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Plus, Database, BarChart, Clock } from "lucide-react";
+import Header from "@/components/header";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+import { useSession } from "next-auth/react";
+import { Exam } from "@/@types/ExamProps";
+
+interface ExamsDetails {
+  total_exams: number;
+  last_month: number;
+  total_weeks: number;
+  last_week: number;
+  applied_last_month: number;
+  total_exams_applied: number;
+  recent_exams: Exam[];
+  next_exams_applications: Exam[];
+  total_questions_last_month: number;
+  total_questions: number;
+  total_exams_generated_by_ai: number;
+  total_exams_generated_by_ai_last_month: number;
+}
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const { data: examsDetails, isLoading } = useSWR<ExamsDetails>(
+    session?.id ? `/exams/details/` : null,
+    fetcher
+  );
+
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
       <Header />
@@ -23,42 +58,67 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Provas</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total de Provas
+              </CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">+2 no último mês</p>
+              <div className="text-2xl font-bold">
+                {examsDetails?.total_exams}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                +{examsDetails?.last_month} no último mês
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Provas Aplicadas</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Provas Aplicadas
+              </CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground">+1 na última semana</p>
+              <div className="text-2xl font-bold">
+                {examsDetails?.total_exams_applied}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                +{examsDetails?.applied_last_month} no último mês
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Questões no Banco</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Questões no Banco
+              </CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">87</div>
-              <p className="text-xs text-muted-foreground">+15 no último mês</p>
+              <div className="text-2xl font-bold">
+                {examsDetails?.total_questions}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                +{examsDetails?.total_questions_last_month} no último mês
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Média de Notas</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Provas geradas pela IA
+              </CardTitle>
               <BarChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">7.6</div>
-              <p className="text-xs text-muted-foreground">+0.2 comparado ao mês anterior</p>
+              <div className="text-2xl font-bold">
+                {examsDetails?.total_exams_generated_by_ai}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                +{examsDetails?.total_exams_generated_by_ai_last_month} no último
+                mês
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -70,24 +130,27 @@ export default function DashboardPage() {
           </TabsList>
           <TabsContent value="recent" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                { title: "Prova de Matemática - 2º Ano", date: "15/03/2025", status: "Aplicada", responses: 28 },
-                { title: "Avaliação de Física - 3º Ano", date: "10/03/2025", status: "Corrigida", responses: 32 },
-                { title: "Teste de Programação - Turma A", date: "05/03/2025", status: "Corrigida", responses: 24 },
-              ].map((exam, index) => (
+              {examsDetails?.recent_exams.map((exam, index) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="text-lg">{exam.title}</CardTitle>
-                    <CardDescription>Aplicada em: {exam.date}</CardDescription>
+                    <CardDescription>
+                      Criada em:{" "}
+                      {new Date(exam.created_at).toLocaleDateString("pt-BR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex justify-between text-sm">
                       <span>Status: {exam.status}</span>
-                      <span>Respostas: {exam.responses}</span>
+                      <span>Dificuldade: {exam.difficulty}</span>
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Link href={`/exams/${index}`} className="w-full">
+                    <Link href={`/exams/${exam.id}`} className="w-full">
                       <Button variant="outline" className="w-full">
                         Ver detalhes
                       </Button>
@@ -99,20 +162,24 @@ export default function DashboardPage() {
           </TabsContent>
           <TabsContent value="upcoming" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                { title: "Prova de História - 1º Ano", date: "25/03/2025", mode: "Online", students: 35 },
-                { title: "Avaliação de Química - 3º Ano", date: "28/03/2025", mode: "Impressa", students: 30 },
-                { title: "Teste de Inglês - Turma B", date: "02/04/2025", mode: "Online", students: 28 },
-              ].map((exam, index) => (
+              {examsDetails?.next_exams_applications.map((exam, index) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="text-lg">{exam.title}</CardTitle>
-                    <CardDescription>Data: {exam.date}</CardDescription>
+                    <CardDescription>
+                      Criação:{" "}
+                      {new Date(exam.created_at).toLocaleDateString("pt-BR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex justify-between text-sm">
-                      <span>Modo: {exam.mode}</span>
-                      <span>Alunos: {exam.students}</span>
+                      <span>Status: {exam.status}</span>
+                      <span>Dificuldade: {exam.difficulty}</span>
+                      <span>Disciplina: {exam.discipline}</span>
                     </div>
                   </CardContent>
                   <CardFooter>
@@ -129,6 +196,5 @@ export default function DashboardPage() {
         </Tabs>
       </main>
     </div>
-  )
+  );
 }
-
