@@ -121,6 +121,23 @@ export default function ExamDetailsPage() {
     }
   }
 
+  async function handleDownloadExam(id: string) {
+    try {
+      const response = await api.get(`/exams/${id}/file/`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${exam?.title}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   if (!exam) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -333,7 +350,8 @@ export default function ExamDetailsPage() {
                           ) : (
                             <div className="pl-4 mt-2">
                               <p className="text-sm text-muted-foreground italic">
-                                Não existe uma resposta cadastrada para essa questão
+                                Não existe uma resposta cadastrada para essa
+                                questão
                               </p>
                             </div>
                           ))}
@@ -385,7 +403,11 @@ export default function ExamDetailsPage() {
                   <Download className="mr-2 h-4 w-4" />
                   Baixar Resultados (CSV)
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={() => handleDownloadExam(exam.id)}
+                >
                   <Download className="mr-2 h-4 w-4" />
                   Baixar Prova (PDF)
                 </Button>
