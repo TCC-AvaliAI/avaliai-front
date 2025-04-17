@@ -5,7 +5,9 @@ export interface QuestionProps {
   answer: number;
   answer_text: string;
   score: number;
-  type: "MC" | "TF" | "ES";
+  type: QuestionType;
   user: string;
   created_at: string;
 }
+
+export type QuestionType = "MC" | "TF" | "ES";

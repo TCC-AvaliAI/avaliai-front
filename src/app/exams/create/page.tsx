@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,51 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  FileText,
-  Plus,
-  Trash2,
-  GripVertical,
-  Copy,
-  Save,
-  Download,
-  QrCode,
-} from "lucide-react";
+import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
+import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
+import { Exam } from "@/@types/ExamProps";
+import { v4 as uuidv4 } from "uuid";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+import { useSession } from "next-auth/react";
 
-// Definição dos tipos
-type QuestionType = "multiple-choice" | "true-false" | "essay";
 type DifficultyLevel = "easy" | "medium" | "hard";
-
-interface Option {
-  id: number;
-  text: string;
-}
-
-interface Question {
-  id: number;
-  type: QuestionType;
-  text: string;
-  options?: Option[];
-  answer?: string;
-  answers?: number[];
-  maxLength?: number;
-  points: number;
-}
-
-interface ExamInfo {
-  title: string;
-  subject: string;
-  grade: string;
-  difficulty: DifficultyLevel;
-  isOnline: boolean;
-  description: string;
-  duration: number;
-}
 
 interface SuggestedQuestion {
   id: number;
@@ -67,28 +33,41 @@ interface SuggestedQuestion {
   difficulty: DifficultyLevel;
   subject: string;
 }
+type DisciplineProps = {
+  id: string;
+  name: string;
+  user: string;
+};
+type ClassroomProps = {
+  id: string;
+  code: string;
+  name: string;
+  user: string;
+};
 
 export default function CreateExamPage() {
+  const { data: session } = useSession();
+
   const suggestedQuestions: Record<DifficultyLevel, SuggestedQuestion[]> = {
     easy: [
       {
         id: 1,
         text: "Qual é a capital do Brasil?",
-        type: "multiple-choice",
+        type: "MC",
         difficulty: "easy",
         subject: "Geografia",
       },
       {
         id: 2,
         text: "Quanto é 2 + 2?",
-        type: "multiple-choice",
+        type: "MC",
         difficulty: "easy",
         subject: "Matemática",
       },
       {
         id: 3,
         text: "A água ferve a 100°C ao nível do mar.",
-        type: "true-false",
+        type: "TF",
         difficulty: "easy",
         subject: "Ciências",
       },
@@ -97,21 +76,21 @@ export default function CreateExamPage() {
       {
         id: 4,
         text: "Qual é o valor de x na equação 2x + 5 = 15?",
-        type: "multiple-choice",
+        type: "MC",
         difficulty: "medium",
         subject: "Matemática",
       },
       {
         id: 5,
         text: "Quais são os estados físicos da matéria?",
-        type: "multiple-choice",
+        type: "MC",
         difficulty: "medium",
         subject: "Ciências",
       },
       {
         id: 6,
         text: "Explique o processo de fotossíntese.",
-        type: "essay",
+        type: "ES",
         difficulty: "medium",
         subject: "Biologia",
       },
@@ -120,183 +99,159 @@ export default function CreateExamPage() {
       {
         id: 7,
         text: "Resolva a integral ∫(x²+2x+1)dx",
-        type: "essay",
+        type: "ES",
         difficulty: "hard",
         subject: "Matemática",
       },
       {
         id: 8,
         text: "Explique o princípio da incerteza de Heisenberg.",
-        type: "essay",
+        type: "ES",
         difficulty: "hard",
         subject: "Física",
       },
       {
         id: 9,
         text: "Quais dos seguintes compostos são ácidos fortes?",
-        type: "essay",
+        type: "ES",
         difficulty: "hard",
         subject: "Química",
       },
     ],
   };
 
-  const [questions, setQuestions] = useState<Question[]>([
+  const [questions, setQuestions] = useState<QuestionProps[]>([
     {
-      id: 1,
-      type: "multiple-choice",
-      text: "",
-      options: [
-        { id: 1, text: "" },
-        { id: 2, text: "" },
-        { id: 3, text: "" },
-        { id: 4, text: "" },
-      ],
-      answer: "",
-      points: 1,
+      type: "TF",
+      title: "Título da questão",
+      options: ["Verdadeiro", "Falso"],
+      answer: 0,
+      score: 10,
+      answer_text: "",
+      created_at: "",
+      user: "",
     },
   ]);
 
-  const [examInfo, setExamInfo] = useState<ExamInfo>({
+  const [examInfo, setExamInfo] = useState<Exam>({
+    id: "",
+    user: "",
     title: "",
-    subject: "",
-    grade: "",
-    difficulty: "medium",
-    isOnline: true,
+    duration: 0,
+    score: 0,
+    created_at: "",
+    applied_at: "",
+    qr_code: "",
     description: "",
-    duration: 60,
+    theme: "",
+    was_generated_by_ai: false,
+    difficulty: "medium",
+    status: "PENDING",
+    discipline: "",
+    classroom: "",
+    questions: [],
   });
 
   const addQuestion = (type: QuestionType) => {
-    const newQuestion: Question = {
-      id: questions.length + 1,
+    const newQuestion: QuestionProps = {
+      id: uuidv4(),
+      title: "",
+      score: 10,
+      answer_text: "",
+      created_at: "",
+      user: "",
+      answer: 0,
+      options: [],
       type,
-      text: "",
-      points: 1,
     };
 
-    if (type === "multiple-choice") {
-      newQuestion.options = [
-        { id: 1, text: "" },
-        { id: 2, text: "" },
-        { id: 3, text: "" },
-        { id: 4, text: "" },
-      ];
-      newQuestion.answer = "";
-    } else if (type === "true-false") {
-      newQuestion.options = [
-        { id: 1, text: "Verdadeiro" },
-        { id: 2, text: "Falso" },
-      ];
-      newQuestion.answer = "";
-    } else if (type === "essay") {
-      newQuestion.answer = "";
-      newQuestion.maxLength = 500;
+    if (type === "MC") {
+      newQuestion.options = ["", "", "", ""];
+    } else if (type === "TF") {
+      newQuestion.options = ["Verdadeiro", "Falso"];
     }
-
     setQuestions([...questions, newQuestion]);
   };
 
   const addSuggestedQuestion = (question: SuggestedQuestion) => {
-    const newQuestion: Question = {
-      id: questions.length + 1,
+    const newQuestion: QuestionProps = {
+      id: uuidv4(),
+      title: question.text,
+      score: 10,
+      answer_text: "",
+      created_at: "",
+      user: "",
+      answer: 0,
+      options: [],
       type: question.type,
-      text: question.text,
-      points: 1,
     };
 
-    if (question.type === "multiple-choice") {
-      newQuestion.options = [
-        { id: 1, text: "Opção 1" },
-        { id: 2, text: "Opção 2" },
-        { id: 3, text: "Opção 3" },
-        { id: 4, text: "Opção 4" },
-      ];
-      newQuestion.answer = "";
-    } else if (question.type === "true-false") {
-      newQuestion.options = [
-        { id: 1, text: "Verdadeiro" },
-        { id: 2, text: "Falso" },
-      ];
-      newQuestion.answer = "";
-    } else if (question.type === "essay") {
-      newQuestion.answer = "";
-      newQuestion.maxLength = 500;
+    if (question.type === "MC") {
+      newQuestion.options = ["Opção 1", "Opção 2", "Opção 3", "Opção 4"];
+      newQuestion.answer = 1;
+    } else if (question.type === "TF") {
+      newQuestion.options = ["Verdadeiro", "Falso"];
+      newQuestion.answer = 1;
+    } else if (question.type === "ES") {
+      newQuestion.answer = 0;
     }
 
     setQuestions([...questions, newQuestion]);
   };
 
-  const removeQuestion = (id: number) => {
+  const removeQuestion = (id: string) => {
     setQuestions(questions.filter((q) => q.id !== id));
   };
 
-  const duplicateQuestion = (id: number) => {
+  const duplicateQuestion = (id: string) => {
     const questionToDuplicate = questions.find((q) => q.id === id);
     if (questionToDuplicate) {
-      const newQuestion = { ...questionToDuplicate, id: questions.length + 1 };
+      const newQuestion = {
+        ...questionToDuplicate,
+        id: String(questions.length + 1),
+      };
       setQuestions([...questions, newQuestion]);
     }
   };
 
-  const updateQuestionText = (id: number, text: string) => {
-    setQuestions(questions.map((q) => (q.id === id ? { ...q, text } : q)));
+  const updateQuestionText = (id: string, text: string) => {
+    setQuestions(
+      questions.map((q) => (q.id === id ? { ...q, title: text } : q))
+    );
   };
 
   const updateQuestionOption = (
-    id: number,
-    optionId: number,
+    id: string,
+    optionIndex: number,
     value: string
   ) => {
     setQuestions(
       questions.map((q) => {
-        if (q.id === id && q.options) {
-          const newOptions = q.options.map((opt) =>
-            opt.id === optionId ? { ...opt, text: value } : opt
-          );
-          return { ...q, options: newOptions };
+        if (q.id === id) {
+          const updatedOptions = [...q.options];
+          updatedOptions[optionIndex] = value;
+          return { ...q, options: updatedOptions };
         }
         return q;
       })
     );
   };
 
-  const updateQuestionPoints = (id: number, points: string) => {
+  const updateQuestionPoints = (id: string, points: string) => {
     setQuestions(
       questions.map((q) =>
-        q.id === id ? { ...q, points: Number.parseInt(points) || 1 } : q
+        q.id === id ? { ...q, score: Number.parseInt(points) || 1 } : q
       )
     );
   };
 
-  const updateQuestionAnswer = (id: number, answer: string) => {
+  const updateQuestionAnswer = (id: string, answer: number) => {
     setQuestions(questions.map((q) => (q.id === id ? { ...q, answer } : q)));
   };
 
-  const updateQuestionCheckboxAnswer = (
-    id: number,
-    optionId: number,
-    checked: boolean
-  ) => {
-    setQuestions(
-      questions.map((q) => {
-        if (q.id === id) {
-          let newAnswers = q.answers || [];
-          if (checked) {
-            newAnswers = [...newAnswers, optionId];
-          } else {
-            newAnswers = newAnswers.filter((a) => a !== optionId);
-          }
-          return { ...q, answers: newAnswers };
-        }
-        return q;
-      })
-    );
-  };
-
-  const renderQuestionEditor = (question: Question) => {
+  const renderQuestionEditor = (question: QuestionProps) => {
     switch (question.type) {
-      case "multiple-choice":
+      case "MC":
         return (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -304,39 +259,32 @@ export default function CreateExamPage() {
               <Textarea
                 id={`question-${question.id}-text`}
                 placeholder="Digite a pergunta aqui..."
-                value={question.text}
+                value={question.title}
                 onChange={(e) =>
-                  updateQuestionText(question.id, e.target.value)
+                  updateQuestionText(question.id!, e.target.value)
                 }
               />
             </div>
             <div className="space-y-2">
               <Label>Opções</Label>
-              {question.options?.map((option) => (
-                <div
-                  key={option.id}
-                  className="flex items-center space-x-2 mb-2"
-                >
+              {question.options.map((option, index) => (
+                <div key={index} className="flex items-center space-x-2 mb-2">
                   <RadioGroup
-                    value={question.answer || ""}
+                    value={String(question.answer)}
                     onValueChange={(value) =>
-                      updateQuestionAnswer(question.id, value)
+                      updateQuestionAnswer(question.id!, parseInt(value))
                     }
                   >
                     <RadioGroupItem
-                      value={option.id.toString()}
-                      id={`q${question.id}-option-${option.id}`}
+                      value={String(index)}
+                      id={`q${question.id}-option-${index}`}
                     />
                   </RadioGroup>
                   <Input
-                    placeholder={`Opção ${option.id}`}
-                    value={option.text}
+                    placeholder={`Opção ${index + 1}`}
+                    value={option}
                     onChange={(e) =>
-                      updateQuestionOption(
-                        question.id,
-                        option.id,
-                        e.target.value
-                      )
+                      updateQuestionOption(question.id!, index, e.target.value)
                     }
                   />
                 </div>
@@ -344,7 +292,7 @@ export default function CreateExamPage() {
             </div>
           </div>
         );
-      case "true-false":
+      case "TF":
         return (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -352,29 +300,29 @@ export default function CreateExamPage() {
               <Textarea
                 id={`question-${question.id}-text`}
                 placeholder="Digite a afirmação aqui..."
-                value={question.text}
+                value={question.title}
                 onChange={(e) =>
-                  updateQuestionText(question.id, e.target.value)
+                  updateQuestionText(question.id!, e.target.value)
                 }
               />
             </div>
             <div className="space-y-2">
               <Label>Resposta correta</Label>
               <RadioGroup
-                value={question.answer || ""}
+                value={String(question.answer)}
                 onValueChange={(value) =>
-                  updateQuestionAnswer(question.id, value)
+                  updateQuestionAnswer(question.id!, parseInt(value))
                 }
                 className="flex space-x-4"
               >
-                {question.options?.map((option) => (
-                  <div key={option.id} className="flex items-center space-x-2">
+                {question.options.map((option, index) => (
+                  <div key={index} className="flex items-center space-x-2">
                     <RadioGroupItem
-                      value={option.id.toString()}
-                      id={`q${question.id}-option-${option.id}`}
+                      value={String(index)}
+                      id={`q${question.id}-option-${index}`}
                     />
-                    <Label htmlFor={`q${question.id}-option-${option.id}`}>
-                      {option.text}
+                    <Label htmlFor={`q${question.id}-option-${index}`}>
+                      {option}
                     </Label>
                   </div>
                 ))}
@@ -382,7 +330,7 @@ export default function CreateExamPage() {
             </div>
           </div>
         );
-      case "essay":
+      case "ES":
         return (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -390,9 +338,9 @@ export default function CreateExamPage() {
               <Textarea
                 id={`question-${question.id}-text`}
                 placeholder="Digite a pergunta aqui..."
-                value={question.text}
+                value={question.title}
                 onChange={(e) =>
-                  updateQuestionText(question.id, e.target.value)
+                  updateQuestionText(question.id!, e.target.value)
                 }
               />
             </div>
@@ -403,9 +351,15 @@ export default function CreateExamPage() {
               <Textarea
                 id={`question-${question.id}-answer`}
                 placeholder="Digite a resposta esperada aqui..."
-                value={question.answer || ""}
+                value={question.answer_text}
                 onChange={(e) =>
-                  updateQuestionAnswer(question.id, e.target.value)
+                  setQuestions(
+                    questions.map((q) =>
+                      q.id === question.id
+                        ? { ...q, answer_text: e.target.value }
+                        : q
+                    )
+                  )
                 }
               />
             </div>
@@ -415,6 +369,15 @@ export default function CreateExamPage() {
         return null;
     }
   };
+
+  const { data: disciplines } = useSWR(
+    `/disciplines/?user=${session?.id}`,
+    fetcher
+  );
+  const { data: classrooms } = useSWR(
+    `/classrooms/?user=${session?.id}`,
+    fetcher
+  );
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -445,25 +408,46 @@ export default function CreateExamPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="exam-subject">Disciplina</Label>
-                      <Input
-                        id="exam-subject"
-                        placeholder="Ex: Matemática"
-                        value={examInfo.subject}
-                        onChange={(e) =>
-                          setExamInfo({ ...examInfo, subject: e.target.value })
+                      <Select
+                        value={examInfo.discipline}
+                        onValueChange={(value) =>
+                          setExamInfo({ ...examInfo, discipline: value })
                         }
-                      />
+                      >
+                        <SelectTrigger id="exam-subject">
+                          <SelectValue placeholder="Selecione a disciplina" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {disciplines?.map((discipline: DisciplineProps) => (
+                            <SelectItem
+                              key={discipline.id}
+                              value={discipline.id}
+                            >
+                              {discipline.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="exam-grade">Série/Turma</Label>
-                      <Input
-                        id="exam-grade"
-                        placeholder="Ex: 2º Ano - Turma A"
-                        value={examInfo.grade}
-                        onChange={(e) =>
-                          setExamInfo({ ...examInfo, grade: e.target.value })
+                      <Select
+                        value={examInfo.classroom}
+                        onValueChange={(value) =>
+                          setExamInfo({ ...examInfo, classroom: value })
                         }
-                      />
+                      >
+                        <SelectTrigger id="exam-grade">
+                          <SelectValue placeholder="Selecione a turma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {classrooms?.map((classroom: ClassroomProps) => (
+                            <SelectItem key={classroom.id} value={classroom.id}>
+                              {classroom.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -525,7 +509,7 @@ export default function CreateExamPage() {
             </Card>
 
             {questions.map((question, index) => (
-              <Card key={question.id} className="relative">
+              <Card key={question.title} className="relative">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-2">
@@ -545,23 +529,23 @@ export default function CreateExamPage() {
                           type="number"
                           min="1"
                           className="w-16 h-8"
-                          value={question.points}
+                          value={question.score}
                           onChange={(e) =>
-                            updateQuestionPoints(question.id, e.target.value)
+                            updateQuestionPoints(question.id!, e.target.value)
                           }
                         />
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => duplicateQuestion(question.id)}
+                        onClick={() => duplicateQuestion(question.id!)}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeQuestion(question.id)}
+                        onClick={() => removeQuestion(question.id!)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -576,24 +560,15 @@ export default function CreateExamPage() {
               <Card className="w-full">
                 <CardContent className="justify-center items-center">
                   <div className="flex justify-around">
-                    <Button
-                      variant="outline"
-                      onClick={() => addQuestion("multiple-choice")}
-                    >
+                    <Button variant="outline" onClick={() => addQuestion("MC")}>
                       <Plus className="mr-2 h-4 w-4" />
                       Múltipla Escolha
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => addQuestion("true-false")}
-                    >
+                    <Button variant="outline" onClick={() => addQuestion("TF")}>
                       <Plus className="mr-2 h-4 w-4" />
                       Verdadeiro/Falso
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => addQuestion("essay")}
-                    >
+                    <Button variant="outline" onClick={() => addQuestion("ES")}>
                       <Plus className="mr-2 h-4 w-4" />
                       Dissertativa
                     </Button>
@@ -631,9 +606,9 @@ export default function CreateExamPage() {
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
                               Tipo:{" "}
-                              {question.type === "multiple-choice"
+                              {question.type === "MC"
                                 ? "Múltipla Escolha"
-                                : question.type === "true-false"
+                                : question.type === "TF"
                                 ? "Verdadeiro/Falso"
                                 : "Dissertativa"}
                             </p>
@@ -659,7 +634,7 @@ export default function CreateExamPage() {
                   <div className="flex justify-between">
                     <span className="text-sm">Pontuação total:</span>
                     <span className="text-sm font-medium">
-                      {questions.reduce((sum, q) => sum + (q.points || 1), 0)}{" "}
+                      {questions.reduce((sum, q) => sum + (q.score || 1), 0)}{" "}
                       pontos
                     </span>
                   </div>
@@ -667,12 +642,6 @@ export default function CreateExamPage() {
                     <span className="text-sm">Duração estimada:</span>
                     <span className="text-sm font-medium">
                       {examInfo.duration} minutos
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Modo:</span>
-                    <span className="text-sm font-medium">
-                      {examInfo.isOnline ? "Online" : "Impresso"}
                     </span>
                   </div>
                 </div>
