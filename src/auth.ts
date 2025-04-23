@@ -47,10 +47,17 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
     },
     async session({ session, token }) {
       if (token.accessToken) {
+        console.log("Token:", token);
         try {
-          const response = await api.post("/user/login/suap/", {
-            access_token: token.accessToken,
-          });
+          const response = await api.post(
+            "/user/login/suap/",
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token.accessToken}`,
+              },
+            }
+          );
           const { user } = response.data;
           session.id = user.id;
           token.isAuthenticated = true;

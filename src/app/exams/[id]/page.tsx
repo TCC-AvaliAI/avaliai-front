@@ -22,17 +22,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Edit,
   Download,
   QrCode,
-  Share2,
   Clock,
   ChevronLeft,
-  Send,
   Star,
+  FileCheck,
 } from "lucide-react";
 import Header from "@/components/header";
 import { Exam, ExamStatus, DifficultyLevel } from "@/@types/ExamProps";
@@ -136,6 +133,10 @@ export default function ExamDetailsPage() {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  async function handleMarkAsApplied(id: string) {
+    console.log("Marcar como aplicada", id);
   }
 
   if (!exam) {
@@ -418,6 +419,14 @@ export default function ExamDetailsPage() {
                 >
                   <QrCode className="mr-2 h-4 w-4" />
                   Gerar QR Code
+                </Button>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={() => handleMarkAsApplied(exam.id)}
+                >
+                  <FileCheck className="mr-2 h-4 w-4" />
+                  Marcar como Aplicada
                 </Button>
               </CardContent>
             </Card>
