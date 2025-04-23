@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import api from "@/lib/axios";
+import { NextResponse } from "next/server";
 
 export const { signIn, signOut, auth, handlers } = NextAuth({
   providers: [
@@ -60,10 +61,10 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
           session.image = token.image;
           session.idToken = token.idToken;
         } catch (error: any) {
-          console.error(
-            "Erro ao enviar o accessToken para o backend:",
-            error.message
-          );
+          if (error.response?.status === 401) {
+            token.isAuthenticated = false;
+            return { ...session, user: undefined };
+          }
         }
       }
 
