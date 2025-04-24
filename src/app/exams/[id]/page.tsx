@@ -39,6 +39,7 @@ import useSWR from "swr";
 import { Loading } from "@/components/loading/page";
 import QRCode from "react-qr-code";
 import api from "@/lib/axios";
+import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 
 const renderStatusBadge = (status: ExamStatus) => {
   switch (status) {
@@ -103,9 +104,13 @@ export default function ExamDetailsPage() {
   const params = useParams();
   const examId = params.id as string;
   const [showQrCode, setShowQrCode] = useState(false);
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
 
   const { data: exam, isLoading } = useSWR<Exam>(`/exams/${examId}`, fetcher);
-  if (isLoading) return <Loading />;
+  if (isLoading || !exam) return <Loading />;
 
   async function handleGenerateQRCode(id: string) {
     try {
@@ -113,8 +118,15 @@ export default function ExamDetailsPage() {
       await api.patch(`/exams/${id}/qrcode/`, {
         qr_code: `${apiFront}/exams/${id}`,
       });
+      setMessageAlert({
+        message: "QR Code gerado com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
-      console.log(error);
+      setMessageAlert({
+        message: "Erro ao gerar QR Code.",
+        variant: "error",
+      });
     }
   }
 
@@ -130,41 +142,44 @@ export default function ExamDetailsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      setMessageAlert({
+        message: "Prova baixada com sucesso.",
+        variant: "success",
+      });
     } catch (error) {
-      console.log(error);
+      setMessageAlert({
+        message: "Erro ao baixar a prova.",
+        variant: "error",
+      });
     }
   }
 
   async function handleMarkAsApplied(id: string) {
-    console.log("Marcar como aplicada", id);
-  }
-
-  if (!exam) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1 container py-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Link href="/exams">
-              <Button variant="ghost" size="sm">
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Voltar
-              </Button>
-            </Link>
-          </div>
-          <Card className="p-6">
-            <p className="text-center text-muted-foreground">
-              Carregando detalhes da prova...
-            </p>
-          </Card>
-        </main>
-      </div>
-    );
+    try {
+      await api.patch(`/exams/${id}/apply/`);
+      setMessageAlert({
+        message: "Prova marcada como aplicada com sucesso.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.log(error);
+      setMessageAlert({
+        message: "Erro ao marcar a prova como aplicada.",
+        variant: "error",
+      });
+    }
   }
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
+      {messageAlert.message && (
+        <MessageAlert
+          variant={messageAlert.variant}
+          message={messageAlert.message}
+          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
+        />
+      )}
       <main className="flex-1 container py-6">
         <div className="flex items-center gap-2 mb-6">
           <Link href="/exams">
@@ -183,8 +198,16 @@ export default function ExamDetailsPage() {
                 <div className="flex flex-wrap gap-2 mb-2">
                   {renderStatusBadge(exam.status)}
                   {renderDifficultyBadge(exam.difficulty)}
-                  <Badge variant="outline">
-                    {exam.qr_code ? "Online" : "Impressa"}
+                  <Badge
+                    variant="outline"
+                    title={
+                      exam.was_generated_by_ai
+                        ? "Criada por IA"
+                        : "Criada por você"
+                    }
+                    className="hover:cursor-help"
+                  >
+                    {exam.was_generated_by_ai ? "AI" : "YOU"}
                   </Badge>
                 </div>
                 <CardDescription>{exam.description}</CardDescription>

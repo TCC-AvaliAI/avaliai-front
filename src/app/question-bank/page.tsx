@@ -32,6 +32,7 @@ import { Loading } from "@/components/loading/page";
 import { fetcher } from "@/lib/fetcher";
 import { useSession } from "next-auth/react";
 import api from "@/lib/axios";
+import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 
 export default function QuestionBankPage() {
   const { data: session } = useSession();
@@ -45,14 +46,15 @@ export default function QuestionBankPage() {
     type: "MC",
     user: session?.id || "",
   });
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
 
   const { data: questions, isLoading } = useSWR<QuestionProps[]>(
     `/questions/?user=${session?.id}`,
     fetcher
   );
-
-  if (!session)
-    return <div>Por favor, faça login para acessar o banco de questões.</div>;
   if (isLoading) return <Loading />;
 
   const filteredQuestions = questions!.filter((q) =>
@@ -66,10 +68,18 @@ export default function QuestionBankPage() {
     });
   };
   const handleDeleteQuestion = async (id: string | undefined) => {
-    if (!id) return;
     try {
       await api.delete(`/questions/${id}`);
-    } catch (error) {}
+      setMessageAlert({
+        message: "Questão excluída com sucesso!",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao excluir a questão.",
+        variant: "error",
+      });
+    }
   };
 
   const handleOptionChange = (index: number, value: string) => {
@@ -97,6 +107,13 @@ export default function QuestionBankPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
+      {messageAlert.message && (
+        <MessageAlert
+          variant={messageAlert.variant}
+          message={messageAlert.message}
+          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
+        />
+      )}
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">
@@ -240,9 +257,6 @@ export default function QuestionBankPage() {
                         </span>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Edit className="h-4 w-4" />
-                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -308,10 +322,11 @@ export default function QuestionBankPage() {
                             </span>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="icon">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteQuestion(question?.id)}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>

@@ -36,10 +36,7 @@ export default function ExamsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const { data: session } = useSession();
 
-  const { data: exams = [], isLoading } = useSWR<Exam[]>(
-    session?.id ? `/exams/?user=${session.id}` : null,
-    fetcher
-  );
+  const { data: exams = [], isLoading } = useSWR<Exam[]>(`/exams/`, fetcher);
 
   if (isLoading) return <Loading />;
 

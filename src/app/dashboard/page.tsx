@@ -13,10 +13,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Plus, Database, BarChart, Clock } from "lucide-react";
 import Header from "@/components/header";
-import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
-import { useSession } from "next-auth/react";
 import { Exam } from "@/@types/ExamProps";
 import { QuestionProps } from "@/@types/QuestionProps";
 import {
@@ -50,9 +48,8 @@ export default function DashboardPage() {
     TF: "Verdadeiro ou Falso",
     ES: "Discursiva",
   };
-  const { data: session } = useSession();
   const { data: examsDetails, isLoading } = useSWR<ExamsDetails>(
-    session?.id ? `/exams/details/` : null,
+    `/exams/details/`,
     fetcher
   );
   if (isLoading) return <Loading />;
@@ -216,8 +213,9 @@ export default function DashboardPage() {
                       {questionType[question.type]}
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
-                      {question.options[question.answer] ||
-                        question.answer_text}
+                      {question.type === "ES"
+                        ? question.answer_text
+                        : question.options?.[question.answer] || "N/A"}
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       {question.score}

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,12 +10,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
+import api from "@/lib/axios";
 
 interface ExamActionsMenuProps {
   examId: string;
 }
 
 export function ExamActionsMenu({ examId }: ExamActionsMenuProps) {
+  async function handleMarkAsApplied() {
+    try {
+      await api.patch(`/exams/${examId}/apply/`);
+    } catch (error) {}
+  }
+
+  async function handleMArkAsArchived() {
+    try {
+      await api.patch(`/exams/${examId}/archive/`);
+    } catch (error) {}
+  }
+  async function handleMarkAsCancelled() {
+    try {
+      await api.patch(`/exams/${examId}/cancel/`);
+    } catch (error) {}
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -27,15 +44,16 @@ export function ExamActionsMenu({ examId }: ExamActionsMenuProps) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Ações</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href={`/exams/edit/${examId}`}>
-          <DropdownMenuItem>Editar</DropdownMenuItem>
-        </Link>
-        <DropdownMenuItem>Baixar</DropdownMenuItem>
-        <DropdownMenuItem>Gerar QR Code</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive">
+        <DropdownMenuItem onClick={handleMArkAsArchived}>
           Arquivar
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleMarkAsCancelled}>
+          Cancelar
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleMarkAsApplied}>
+          Marcar como aplicado
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
       </DropdownMenuContent>
     </DropdownMenu>
   );
