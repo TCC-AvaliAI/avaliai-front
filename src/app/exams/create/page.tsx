@@ -23,16 +23,24 @@ import { v4 as uuidv4 } from "uuid";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useSession } from "next-auth/react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useToast } from "@/components/ui/use-toast";
+import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
+import api from "@/lib/axios";
+import { set } from "date-fns";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
 
-interface SuggestedQuestion {
-  id: number;
-  text: string;
-  type: QuestionType;
-  difficulty: DifficultyLevel;
-  subject: string;
-}
 type DisciplineProps = {
   id: string;
   name: string;
@@ -45,94 +53,38 @@ type ClassroomProps = {
   user: string;
 };
 
+const examFormSchema = z.object({
+  title: z.string().min(1, "O título é obrigatório"),
+  description: z.string().min(1, "A descrição é obrigatória"),
+  theme: z.string().min(1, "O tema é obrigatório"),
+  discipline: z.string().min(1, "Selecione uma disciplina"),
+  classroom: z.string().min(1, "Selecione uma turma"),
+});
+
+type ExamFormValues = z.infer<typeof examFormSchema>;
+
 export default function CreateExamPage() {
   const { data: session } = useSession();
-
-  const suggestedQuestions: Record<DifficultyLevel, SuggestedQuestion[]> = {
-    easy: [
-      {
-        id: 1,
-        text: "Qual é a capital do Brasil?",
-        type: "MC",
-        difficulty: "easy",
-        subject: "Geografia",
-      },
-      {
-        id: 2,
-        text: "Quanto é 2 + 2?",
-        type: "MC",
-        difficulty: "easy",
-        subject: "Matemática",
-      },
-      {
-        id: 3,
-        text: "A água ferve a 100°C ao nível do mar.",
-        type: "TF",
-        difficulty: "easy",
-        subject: "Ciências",
-      },
-    ],
-    medium: [
-      {
-        id: 4,
-        text: "Qual é o valor de x na equação 2x + 5 = 15?",
-        type: "MC",
-        difficulty: "medium",
-        subject: "Matemática",
-      },
-      {
-        id: 5,
-        text: "Quais são os estados físicos da matéria?",
-        type: "MC",
-        difficulty: "medium",
-        subject: "Ciências",
-      },
-      {
-        id: 6,
-        text: "Explique o processo de fotossíntese.",
-        type: "ES",
-        difficulty: "medium",
-        subject: "Biologia",
-      },
-    ],
-    hard: [
-      {
-        id: 7,
-        text: "Resolva a integral ∫(x²+2x+1)dx",
-        type: "ES",
-        difficulty: "hard",
-        subject: "Matemática",
-      },
-      {
-        id: 8,
-        text: "Explique o princípio da incerteza de Heisenberg.",
-        type: "ES",
-        difficulty: "hard",
-        subject: "Física",
-      },
-      {
-        id: 9,
-        text: "Quais dos seguintes compostos são ácidos fortes?",
-        type: "ES",
-        difficulty: "hard",
-        subject: "Química",
-      },
-    ],
-  };
-
-  const [questions, setQuestions] = useState<QuestionProps[]>([
-    {
-      type: "TF",
-      title: "Título da questão",
-      options: ["Verdadeiro", "Falso"],
-      answer: 0,
-      score: 10,
-      answer_text: "",
-      created_at: "",
-      user: "",
+  const { toast } = useToast();
+  const form = useForm<ExamFormValues>({
+    resolver: zodResolver(examFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      theme: "",
+      discipline: "",
+      classroom: "",
     },
-  ]);
+  });
 
+  const [suggestedQuestion, setSuggestedQuestion] = useState<
+    Partial<QuestionProps>
+  >({});
+  const [questions, setQuestions] = useState<QuestionProps[]>([]);
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
   const [examInfo, setExamInfo] = useState<Exam>({
     id: "",
     user: "",
@@ -170,32 +122,6 @@ export default function CreateExamPage() {
     } else if (type === "TF") {
       newQuestion.options = ["Verdadeiro", "Falso"];
     }
-    setQuestions([...questions, newQuestion]);
-  };
-
-  const addSuggestedQuestion = (question: SuggestedQuestion) => {
-    const newQuestion: QuestionProps = {
-      id: uuidv4(),
-      title: question.text,
-      score: 10,
-      answer_text: "",
-      created_at: "",
-      user: "",
-      answer: 0,
-      options: [],
-      type: question.type,
-    };
-
-    if (question.type === "MC") {
-      newQuestion.options = ["Opção 1", "Opção 2", "Opção 3", "Opção 4"];
-      newQuestion.answer = 1;
-    } else if (question.type === "TF") {
-      newQuestion.options = ["Verdadeiro", "Falso"];
-      newQuestion.answer = 1;
-    } else if (question.type === "ES") {
-      newQuestion.answer = 0;
-    }
-
     setQuestions([...questions, newQuestion]);
   };
 
@@ -379,9 +305,67 @@ export default function CreateExamPage() {
     fetcher
   );
 
+  const onSubmit = async (data: ExamFormValues) => {
+    try {
+      console.log(data);
+      toast({
+        title: "Sucesso!",
+        description: "Formulário validado com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro!",
+        description: "Ocorreu um erro ao processar o formulário.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  async function handleGenerateExamByAI(data: ExamFormValues) {
+    try {
+      const response = await api.post("/exams/ai/", {
+        ...data,
+      });
+      console.log(response.data);
+      setMessageAlert({
+        message: "Prova gerada com sucesso!",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao gerar a prova com IA.",
+        variant: "error",
+      });
+    }
+  }
+
+  async function handleGenerateExam(data: ExamFormValues) {
+    try {
+      await api.post("/exams/", {
+        ...data,
+      });
+      setMessageAlert({
+        message: "Prova gerada com sucesso!",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao gerar a prova com IA.",
+        variant: "error",
+      });
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
+      {messageAlert.message && (
+        <MessageAlert
+          variant={messageAlert.variant}
+          message={messageAlert.message}
+          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
+        />
+      )}
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">
@@ -389,266 +373,315 @@ export default function CreateExamPage() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="exam-title">Título da Prova</Label>
-                    <Input
-                      id="exam-title"
-                      placeholder="Ex: Avaliação de Matemática - 2º Bimestre"
-                      value={examInfo.title}
-                      onChange={(e) =>
-                        setExamInfo({ ...examInfo, title: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="exam-subject">Disciplina</Label>
-                      <Select
-                        value={examInfo.discipline}
-                        onValueChange={(value) =>
-                          setExamInfo({ ...examInfo, discipline: value })
-                        }
-                      >
-                        <SelectTrigger id="exam-subject">
-                          <SelectValue placeholder="Selecione a disciplina" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {disciplines?.map((discipline: DisciplineProps) => (
-                            <SelectItem
-                              key={discipline.id}
-                              value={discipline.id}
-                            >
-                              {discipline.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="exam-grade">Série/Turma</Label>
-                      <Select
-                        value={examInfo.classroom}
-                        onValueChange={(value) =>
-                          setExamInfo({ ...examInfo, classroom: value })
-                        }
-                      >
-                        <SelectTrigger id="exam-grade">
-                          <SelectValue placeholder="Selecione a turma" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {classrooms?.map((classroom: ClassroomProps) => (
-                            <SelectItem key={classroom.id} value={classroom.id}>
-                              {classroom.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="exam-difficulty">
-                        Nível de Dificuldade
-                      </Label>
-                      <Select
-                        value={examInfo.difficulty}
-                        onValueChange={(value: DifficultyLevel) =>
-                          setExamInfo({ ...examInfo, difficulty: value })
-                        }
-                      >
-                        <SelectTrigger id="exam-difficulty">
-                          <SelectValue placeholder="Selecione o nível" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="easy">Fácil</SelectItem>
-                          <SelectItem value="medium">Médio</SelectItem>
-                          <SelectItem value="hard">Difícil</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="exam-duration">Duração (minutos)</Label>
-                      <Input
-                        id="exam-duration"
-                        type="number"
-                        min="1"
-                        value={examInfo.duration}
-                        onChange={(e) =>
-                          setExamInfo({
-                            ...examInfo,
-                            duration: Number.parseInt(e.target.value) || 60,
-                          })
-                        }
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Título da Prova</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Ex: Avaliação de Matemática - 2º Bimestre"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="exam-description">
-                      Descrição/Instruções
-                    </Label>
-                    <Textarea
-                      id="exam-description"
-                      placeholder="Instruções para os alunos..."
-                      value={examInfo.description}
-                      onChange={(e) =>
-                        setExamInfo({
-                          ...examInfo,
-                          description: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="discipline"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Disciplina</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a disciplina" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {disciplines?.map(
+                                    (discipline: DisciplineProps) => (
+                                      <SelectItem
+                                        key={discipline.id}
+                                        value={discipline.id}
+                                      >
+                                        {discipline.name}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-            {questions.map((question, index) => (
-              <Card key={question.title} className="relative">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
-                      <h3 className="font-medium">Questão {index + 1}</h3>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center space-x-2">
-                        <Label
-                          htmlFor={`question-${question.id}-points`}
-                          className="text-sm"
-                        >
-                          Pontos:
-                        </Label>
-                        <Input
-                          id={`question-${question.id}-points`}
-                          type="number"
-                          min="1"
-                          className="w-16 h-8"
-                          value={question.score}
-                          onChange={(e) =>
-                            updateQuestionPoints(question.id!, e.target.value)
-                          }
+                        <FormField
+                          control={form.control}
+                          name="classroom"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Série/Turma</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a turma" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {classrooms?.map(
+                                    (classroom: ClassroomProps) => (
+                                      <SelectItem
+                                        key={classroom.id}
+                                        value={classroom.id}
+                                      >
+                                        {classroom.name}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => duplicateQuestion(question.id!)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeQuestion(question.id!)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      <FormField
+                        control={form.control}
+                        name="theme"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tema</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Escreva aqui o tema da prova..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descrição/Instruções</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Instruções para os alunos..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex justify-start gap-4">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={form.handleSubmit((data) =>
+                            handleGenerateExamByAI(data)
+                          )}
+                          disabled={!form.formState.isValid}
+                        >
+                          Gerar prova com IA
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={!form.formState.isValid}
+                          onClick={form.handleSubmit((data) =>
+                            handleGenerateExam(data)
+                          )}
+                        >
+                          Salvar Prova
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  {renderQuestionEditor(question)}
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
 
-            <div className="flex justify-center">
-              <Card className="w-full">
-                <CardContent className="justify-center items-center">
-                  <div className="flex justify-around">
-                    <Button variant="outline" onClick={() => addQuestion("MC")}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Múltipla Escolha
-                    </Button>
-                    <Button variant="outline" onClick={() => addQuestion("TF")}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Verdadeiro/Falso
-                    </Button>
-                    <Button variant="outline" onClick={() => addQuestion("ES")}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Dissertativa
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-medium mb-4">Sugestões de Questões</h3>
-                <Tabs defaultValue={examInfo.difficulty}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="easy">Fácil</TabsTrigger>
-                    <TabsTrigger value="medium">Médio</TabsTrigger>
-                    <TabsTrigger value="hard">Difícil</TabsTrigger>
-                  </TabsList>
-                  {Object.entries(suggestedQuestions).map(
-                    ([difficulty, questions]) => (
-                      <TabsContent
-                        key={difficulty}
-                        value={difficulty}
-                        className="space-y-4 mt-4"
-                      >
-                        {questions.map((question) => (
-                          <div
-                            key={question.id}
-                            className="p-3 border rounded-md hover:bg-muted cursor-pointer"
-                            onClick={() => addSuggestedQuestion(question)}
-                          >
-                            <p className="font-medium text-sm">
-                              {question.subject}: {question.text}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Tipo:{" "}
-                              {question.type === "MC"
-                                ? "Múltipla Escolha"
-                                : question.type === "TF"
-                                ? "Verdadeiro/Falso"
-                                : "Dissertativa"}
-                            </p>
+                {questions.map((question, index) => (
+                  <Card key={question.id} className="relative">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                          <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
+                          <h3 className="font-medium">Questão {index + 1}</h3>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2">
+                            <Label
+                              htmlFor={`question-${question.id}-points`}
+                              className="text-sm"
+                            >
+                              Pontos:
+                            </Label>
+                            <Input
+                              id={`question-${question.id}-points`}
+                              type="number"
+                              min="1"
+                              className="w-16 h-8"
+                              value={question.score}
+                              onChange={(e) =>
+                                updateQuestionPoints(
+                                  question.id!,
+                                  e.target.value
+                                )
+                              }
+                            />
                           </div>
-                        ))}
-                      </TabsContent>
-                    )
-                  )}
-                </Tabs>
-              </CardContent>
-            </Card>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => duplicateQuestion(question.id!)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeQuestion(question.id!)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {renderQuestionEditor(question)}
+                    </CardContent>
+                  </Card>
+                ))}
 
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-medium mb-4">Resumo da Prova</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">Total de questões:</span>
-                    <span className="text-sm font-medium">
-                      {questions.length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Pontuação total:</span>
-                    <span className="text-sm font-medium">
-                      {questions.reduce((sum, q) => sum + (q.score || 1), 0)}{" "}
-                      pontos
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Duração estimada:</span>
-                    <span className="text-sm font-medium">
-                      {examInfo.duration} minutos
-                    </span>
-                  </div>
+                <div className="flex justify-center">
+                  <Card className="w-full">
+                    <CardContent className="justify-center items-center">
+                      <div className="flex justify-around">
+                        <Button
+                          variant="outline"
+                          onClick={() => addQuestion("MC")}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Múltipla Escolha
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => addQuestion("TF")}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Verdadeiro/Falso
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => addQuestion("ES")}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Dissertativa
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <h3 className="font-medium mb-4">Sugestões de Questões</h3>
+                    {suggestedQuestion.title ? (
+                      <div className="flex items-center justify-between mb-4">
+                        <h3>{suggestedQuestion.title}</h3>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setQuestions([
+                                ...questions,
+                                suggestedQuestion as QuestionProps,
+                              ]);
+                              setSuggestedQuestion({
+                                type: "TF",
+                                title: "",
+                                options: [],
+                                answer: 0,
+                                score: 0,
+                                answer_text: "",
+                                created_at: "",
+                                user: "",
+                              });
+                            }}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSuggestedQuestion({})}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">
+                          Nenhuma sugestão disponível.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <h3 className="font-medium mb-4">Resumo da Prova</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Total de questões:</span>
+                        <span className="text-sm font-medium">
+                          {questions.length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Pontuação total:</span>
+                        <span className="text-sm font-medium">
+                          {questions.reduce(
+                            (sum, q) => sum + (q.score || 1),
+                            0
+                          )}{" "}
+                          pontos
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </form>
+        </Form>
       </main>
     </div>
   );

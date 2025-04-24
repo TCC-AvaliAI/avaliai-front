@@ -57,7 +57,7 @@ export function MessageAlert({
   return (
     <div
       className={cn(
-        "flex items-start p-4 rounded-md border-l-4 mb-4",
+        "flex items-start p-4 rounded-md border-l-4 mb-4 mt-3",
         styles.container,
         className
       )}
