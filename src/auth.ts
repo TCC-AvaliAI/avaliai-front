@@ -47,7 +47,6 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
     },
     async session({ session, token }) {
       if (token.accessToken) {
-        console.log("Token:", token);
         try {
           const response = await api.post(
             "/user/login/suap/",
@@ -76,6 +75,13 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       }
 
       return session;
+    },
+  },
+  events: {
+    signOut: async () => {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.clear();
+      }
     },
   },
 });

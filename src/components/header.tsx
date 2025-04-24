@@ -3,28 +3,24 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signIn, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useSession } from "next-auth/react";
 import api from "@/lib/axios";
-import axios from "axios";
 
 const Header = () => {
   const { data: session } = useSession();
   const userName = session?.name;
   const userAvatar = session?.image;
 
-  const handleLogin = () => {
-    signIn("suap");
-  };
-
   const handleLogout = async () => {
+    await signOut({ redirect: false });
     try {
       await api.post("/user/logout/");
+      window.location.href = "/";
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
+      window.location.href = "/";
     }
-    await signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -62,9 +58,11 @@ const Header = () => {
               </Button>
             </div>
           ) : (
-            <Button variant="ghost" size="sm" onClick={handleLogin}>
-              Entrar
-            </Button>
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Entrar
+              </Button>
+            </Link>
           )}
         </div>
       </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,14 +29,11 @@ export default function MainContent() {
                 </p>
               </div>
               <div className="space-x-4">
-                <Button
-                  size="lg"
-                  className="mt-4"
-                  onClick={() => signIn("suap")}
-                >
-                  Começar agora
-                </Button>
-
+                <Link href="/link">
+                  <Button size="lg" className="mt-4">
+                    Começar agora
+                  </Button>
+                </Link>
                 <Link href="#features">
                   <Button variant="outline" size="lg" className="mt-4">
                     Saiba mais
@@ -75,10 +71,10 @@ export default function MainContent() {
               <Card>
                 <CardHeader>
                   <CheckCircle className="h-6 w-6 text-primary mb-2" />
-                  <CardTitle>Correção automática</CardTitle>
+                  <CardTitle>Respostas em fácil acesso</CardTitle>
                   <CardDescription>
-                    Correção automática de questões objetivas e sugestões de IA
-                    para questões subjetivas.
+                    A correção fica mais fácil com a visualização das respostas
+                    e detalhes da prova.
                   </CardDescription>
                 </CardHeader>
               </Card>

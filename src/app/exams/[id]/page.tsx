@@ -112,11 +112,11 @@ export default function ExamDetailsPage() {
   const { data: exam, isLoading } = useSWR<Exam>(`/exams/${examId}`, fetcher);
   if (isLoading || !exam) return <Loading />;
 
-  async function handleGenerateQRCode(id: string) {
+  async function handleGenerateQRCode() {
     try {
       const apiFront = process.env.NEXT_PUBLIC_URL;
-      await api.patch(`/exams/${id}/qrcode/`, {
-        qr_code: `${apiFront}/exams/${id}`,
+      await api.patch(`/exams/${examId}/qrcode/`, {
+        qr_code: `${apiFront}/exams/${examId}`,
       });
       setMessageAlert({
         message: "QR Code gerado com sucesso.",
@@ -130,9 +130,9 @@ export default function ExamDetailsPage() {
     }
   }
 
-  async function handleDownloadExam(id: string) {
+  async function handleDownloadExam() {
     try {
-      const response = await api.get(`/exams/${id}/file/`, {
+      const response = await api.get(`/exams/${examId}/file/`, {
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -154,17 +154,46 @@ export default function ExamDetailsPage() {
     }
   }
 
-  async function handleMarkAsApplied(id: string) {
+  async function handleMarkAsApplied() {
     try {
-      await api.patch(`/exams/${id}/apply/`);
+      await api.patch(`/exams/${examId}/apply/`);
       setMessageAlert({
         message: "Prova marcada como aplicada com sucesso.",
         variant: "success",
       });
     } catch (error) {
-      console.log(error);
       setMessageAlert({
         message: "Erro ao marcar a prova como aplicada.",
+        variant: "error",
+      });
+    }
+  }
+
+  async function handleMArkAsArchived() {
+    try {
+      await api.patch(`/exams/${examId}/archive/`);
+      setMessageAlert({
+        message: "Prova arquivada com sucesso.",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao arquivar a prova.",
+        variant: "error",
+      });
+    }
+  }
+
+  async function handleMarkAsCancelled() {
+    try {
+      await api.patch(`/exams/${examId}/cancel/`);
+      setMessageAlert({
+        message: "Prova cancelada com sucesso.",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao cancelar a prova.",
         variant: "error",
       });
     }
@@ -283,6 +312,22 @@ export default function ExamDetailsPage() {
                   >
                     <QrCode className="mr-2 h-4 w-4" />
                     QR Code
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMArkAsArchived}
+                  >
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Arquivar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMarkAsCancelled}
+                  >
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Cancelar
                   </Button>
                 </div>
               </CardFooter>
@@ -430,7 +475,7 @@ export default function ExamDetailsPage() {
                 <Button
                   className="w-full justify-start"
                   variant="outline"
-                  onClick={() => handleDownloadExam(exam.id)}
+                  onClick={handleDownloadExam}
                 >
                   <Download className="mr-2 h-4 w-4" />
                   Baixar Prova (PDF)
@@ -438,7 +483,7 @@ export default function ExamDetailsPage() {
                 <Button
                   className="w-full justify-start"
                   variant="outline"
-                  onClick={() => handleGenerateQRCode(exam.id)}
+                  onClick={handleGenerateQRCode}
                 >
                   <QrCode className="mr-2 h-4 w-4" />
                   Gerar QR Code
@@ -446,7 +491,7 @@ export default function ExamDetailsPage() {
                 <Button
                   className="w-full justify-start"
                   variant="outline"
-                  onClick={() => handleMarkAsApplied(exam.id)}
+                  onClick={handleMarkAsApplied}
                 >
                   <FileCheck className="mr-2 h-4 w-4" />
                   Marcar como Aplicada

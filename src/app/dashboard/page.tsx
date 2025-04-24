@@ -214,7 +214,7 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       {question.type === "ES"
-                        ? question.answer_text
+                        ? question.answer_text || "N/A"
                         : question.options?.[question.answer] || "N/A"}
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
