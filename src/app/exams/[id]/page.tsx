@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +31,9 @@ import {
   ChevronLeft,
   Star,
   FileCheck,
+  Trash2,
+  Archive,
+  SquareX,
 } from "lucide-react";
 import Header from "@/components/header";
 import { Exam, ExamStatus, DifficultyLevel } from "@/@types/ExamProps";
@@ -101,6 +105,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function ExamDetailsPage() {
+  const router = useRouter();
   const params = useParams();
   const examId = params.id as string;
   const [showQrCode, setShowQrCode] = useState(false);
@@ -199,6 +204,20 @@ export default function ExamDetailsPage() {
     }
   }
 
+  async function handleExameDelete() {
+    try {
+      const response = await api.delete(`/exams/${examId}`);
+      if (response.status === 204) {
+        router.push("/exams");
+      }
+    } catch (error: any) {
+      setMessageAlert({
+        message: error.response?.data?.detail || "Erro ao excluir a prova.",
+        variant: "error",
+      });
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -236,10 +255,9 @@ export default function ExamDetailsPage() {
                     }
                     className="hover:cursor-help"
                   >
-                    {exam.was_generated_by_ai ? "AI" : "YOU"}
+                    {exam.was_generated_by_ai ? "IA" : "Você"}
                   </Badge>
                 </div>
-                <CardDescription>{exam.description}</CardDescription>
               </CardHeader>
               <CardContent className="pb-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -318,7 +336,7 @@ export default function ExamDetailsPage() {
                     size="sm"
                     onClick={handleMArkAsArchived}
                   >
-                    <QrCode className="mr-2 h-4 w-4" />
+                    <Archive className="mr-2 h-4 w-4" />
                     Arquivar
                   </Button>
                   <Button
@@ -326,8 +344,16 @@ export default function ExamDetailsPage() {
                     size="sm"
                     onClick={handleMarkAsCancelled}
                   >
-                    <QrCode className="mr-2 h-4 w-4" />
+                    <SquareX className="mr-2 h-4 w-4" />
                     Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleExameDelete}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir
                   </Button>
                 </div>
               </CardFooter>
@@ -346,7 +372,7 @@ export default function ExamDetailsPage() {
                   <CardContent className="pt-6">
                     {exam.questions.map((question, index) => (
                       <div
-                        key={question.id}
+                        key={question.title}
                         className="mb-6 pb-6 border-b last:border-0 last:mb-0 last:pb-0"
                       >
                         <div className="flex justify-between items-start mb-2">

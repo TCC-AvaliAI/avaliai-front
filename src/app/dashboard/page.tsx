@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loading } from "@/components/loading/page";
+import { Badge } from "@/components/ui/badge";
 
 interface ExamsDetails {
   total_exams: number;
@@ -144,16 +145,29 @@ export default function DashboardPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {examsDetails?.recent_exams.map((exam, index) => (
                 <Card key={index}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{exam.title}</CardTitle>
-                    <CardDescription>
-                      Criada em:{" "}
-                      {new Date(exam.created_at).toLocaleDateString("pt-BR", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })}
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div>
+                      <CardTitle className="text-lg">{exam.title}</CardTitle>
+                      <CardDescription>
+                        Criada em:{" "}
+                        {new Date(exam.created_at).toLocaleDateString("pt-BR", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        })}
+                      </CardDescription>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      title={
+                        exam.was_generated_by_ai
+                          ? "Criada por IA"
+                          : "Criada por você"
+                      }
+                      className="hover:cursor-help"
+                    >
+                      {exam.was_generated_by_ai ? "IA" : "Você"}
+                    </Badge>
                   </CardHeader>
                   <CardContent>
                     <div className="flex justify-between text-sm">
