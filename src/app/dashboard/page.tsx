@@ -11,7 +11,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Plus, Database, BarChart, Clock } from "lucide-react";
+import {
+  FileText,
+  Plus,
+  Database,
+  BarChart,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+} from "lucide-react";
 import Header from "@/components/header";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
@@ -27,6 +36,10 @@ import {
 } from "@/components/ui/table";
 import { Loading } from "@/components/loading/page";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import api from "@/lib/axios";
+import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
+import { set } from "date-fns";
 
 interface ExamsDetails {
   total_exams: number;
@@ -36,11 +49,17 @@ interface ExamsDetails {
   applied_last_month: number;
   total_exams_applied: number;
   recent_exams: Exam[];
-  recent_questions: QuestionProps[];
   total_questions_last_month: number;
   total_questions: number;
   total_exams_generated_by_ai: number;
   total_exams_generated_by_ai_last_month: number;
+}
+
+interface RecentQuestionsProps {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: QuestionProps[];
 }
 
 export default function DashboardPage() {
@@ -53,10 +72,59 @@ export default function DashboardPage() {
     `/exams/details/`,
     fetcher
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const {
+    data: recent_questions,
+    isLoading: isQuestionLoading,
+    mutate: mutateQuestions,
+  } = useSWR<RecentQuestionsProps>(
+    `/questions/recents/?page=${currentPage}`,
+    fetcher
+  );
+
+  async function handleDeleteQuestion(id: string) {
+    try {
+      await api.delete(`/questions/${id}`);
+      await mutateQuestions(
+        {
+          ...recent_questions,
+          results: recent_questions?.results.filter(
+            (question) => question.id !== id
+          ),
+        } as unknown as RecentQuestionsProps,
+        false
+      );
+      setMessageAlert({
+        message: "Questão deletada com sucesso",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao deletar a questão",
+        variant: "error",
+      });
+    }
+  }
+
   if (isLoading) return <Loading />;
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
       <Header />
+      {messageAlert.message && (
+        <MessageAlert
+          variant={messageAlert.variant}
+          message={messageAlert.message}
+          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
+        />
+      )}
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -187,57 +255,91 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
           <TabsContent value="upcoming" className="space-y-4">
-            <Table className="overflow-hidden">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="max-w-xs break-words whitespace-normal">
-                    Título
-                  </TableHead>
-                  <TableHead className="max-w-xs break-words whitespace-normal">
-                    Criação
-                  </TableHead>
-                  <TableHead className="max-w-xs break-words whitespace-normal">
-                    Tipo
-                  </TableHead>
-                  <TableHead className="max-w-xs break-words whitespace-normal">
-                    Resposta Correta
-                  </TableHead>
-                  <TableHead className="max-w-xs break-words whitespace-normal">
-                    Pontuação
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {examsDetails?.recent_questions.map((question, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="max-w-xs break-words whitespace-normal">
-                      {question.title}
-                    </TableCell>
-                    <TableCell className="max-w-xs break-words whitespace-normal">
-                      {new Date(question.created_at).toLocaleDateString(
-                        "pt-BR",
-                        {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                        }
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-xs break-words whitespace-normal">
-                      {questionType[question.type]}
-                    </TableCell>
-                    <TableCell className="max-w-xs break-words whitespace-normal">
-                      {question.type === "ES"
-                        ? question.answer_text || "N/A"
-                        : question.options?.[question.answer] || "N/A"}
-                    </TableCell>
-                    <TableCell className="max-w-xs break-words whitespace-normal">
-                      {question.score}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {isQuestionLoading ? (
+              <Loading />
+            ) : (
+              <>
+                <Table className="overflow-hidden">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                        Título
+                      </TableHead>
+                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                        Criação
+                      </TableHead>
+                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                        Tipo
+                      </TableHead>
+                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                        Resposta Correta
+                      </TableHead>
+                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                        Ação
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recent_questions?.results.map((question) => (
+                      <TableRow key={question.id}>
+                        <TableCell className="max-w-xs break-words whitespace-normal">
+                          {question.title}
+                        </TableCell>
+                        <TableCell className="max-w-xs break-words whitespace-normal">
+                          {new Date(question.created_at).toLocaleDateString(
+                            "pt-BR",
+                            {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                            }
+                          )}
+                        </TableCell>
+                        <TableCell className="max-w-xs break-words whitespace-normal">
+                          {questionType[
+                            question.type as keyof typeof questionType
+                          ]}
+                        </TableCell>
+                        <TableCell className="max-w-xs break-words whitespace-normal">
+                          {question.type === "ES"
+                            ? question.answer_text || "N/A"
+                            : question.options?.[question.answer] || "N/A"}
+                        </TableCell>
+                        <TableCell className="max-w-xs break-words whitespace-normal">
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              handleDeleteQuestion(question.id as string)
+                            }
+                          >
+                            <Trash2 />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <div className="flex justify-center items-center mt-4 space-x-4">
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <span className="text-sm font-medium">
+                    Página {currentPage}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={!recent_questions?.next}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                </div>
+              </>
+            )}
           </TabsContent>
         </Tabs>
       </main>
