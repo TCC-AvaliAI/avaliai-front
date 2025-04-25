@@ -42,6 +42,12 @@ const Header = () => {
           <Link href="/question-bank" className="text-sm font-medium">
             Banco de Questões
           </Link>
+          <Link
+            href="/discipline-and-classroom"
+            className="text-sm font-medium"
+          >
+            Turmas e Classes
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
           {session ? (
