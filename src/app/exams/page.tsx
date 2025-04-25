@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Plus, Search, Clock, Filter } from "lucide-react";
+import { FileText, Plus, Search, Filter } from "lucide-react";
 import Header from "@/components/header";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
@@ -29,14 +29,16 @@ import { useSession } from "next-auth/react";
 import { ExamActionsMenu } from "@/components/exam/exam-actions-menu";
 import { DifficultyLevel, Exam, ExamStatus } from "@/@types/ExamProps";
 import { Loading } from "@/components/loading/page";
+import { Discipline } from "@/@types/DisciplinesProps";
 
 export default function ExamsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const { data: session } = useSession();
 
   const { data: exams = [], isLoading } = useSWR<Exam[]>(`/exams/`, fetcher);
+  const { data: disciplines = [], isLoading: isLoadingDisciplines } = useSWR<
+    Discipline[]
+  >(`/disciplines/`, fetcher);
 
   if (isLoading) return <Loading />;
 
@@ -46,10 +48,7 @@ export default function ExamsPage() {
       exam.discipline.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject =
       subjectFilter === "all" || exam.discipline === subjectFilter;
-    const matchesStatus =
-      statusFilter === "all" || exam.status === statusFilter;
-
-    return matchesSearch && matchesSubject && matchesStatus;
+    return matchesSearch && matchesSubject;
   });
 
   const appliedExams = filteredExams.filter(
@@ -63,10 +62,6 @@ export default function ExamsPage() {
   );
   const archivedExams = filteredExams.filter(
     (exam) => exam.status === "ARCHIVED"
-  );
-
-  const subjects = Array.from(
-    new Set(exams?.map((exam) => exam.discipline) ?? [])
   );
 
   const renderStatusBadge = (status: ExamStatus) => {
@@ -141,26 +136,11 @@ export default function ExamsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {subjects.map((subject) => (
-                  <SelectItem key={subject} value={subject}>
-                    {subject}
+                {disciplines.map(({ name, id }) => (
+                  <SelectItem key={id} value={name}>
+                    {name}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <div className="flex items-center">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <span>Status</span>
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="APPLIED">Aplicada</SelectItem>
-                <SelectItem value="PENDING">Pendente</SelectItem>
-                <SelectItem value="CANCELLED">Cancelada</SelectItem>
-                <SelectItem value="ARCHIVED">Arquivada</SelectItem>
               </SelectContent>
             </Select>
           </div>

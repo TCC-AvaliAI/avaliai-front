@@ -37,6 +37,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import api from "@/lib/axios";
+import { Discipline } from "@/@types/DisciplinesProps";
+import { Classroom } from "@/@types/ClassroomProps";
 
 const disciplineSchema = z.object({
   name: z.string().min(1, "O nome da disciplina é obrigatório"),
@@ -49,17 +51,6 @@ const classroomSchema = z.object({
 
 type DisciplineFormValues = z.infer<typeof disciplineSchema>;
 type ClassroomFormValues = z.infer<typeof classroomSchema>;
-
-interface Discipline {
-  id?: string;
-  name: string;
-}
-
-interface Classroom {
-  id?: string;
-  name: string;
-  code: string;
-}
 
 export default function ManagementPage() {
   const {
