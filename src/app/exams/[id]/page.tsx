@@ -114,19 +114,27 @@ export default function ExamDetailsPage() {
     variant: "success",
   });
 
-  const { data: exam, isLoading } = useSWR<Exam>(`/exams/${examId}`, fetcher);
+  const {
+    data: exam,
+    isLoading,
+    mutate,
+  } = useSWR<Exam>(`/exams/${examId}`, fetcher);
   if (isLoading || !exam) return <Loading />;
 
   async function handleGenerateQRCode() {
     try {
       const apiFront = process.env.NEXT_PUBLIC_URL;
+      const qr_code = `${apiFront}/exams/${examId}`;
       await api.patch(`/exams/${examId}/qrcode/`, {
-        qr_code: `${apiFront}/exams/${examId}`,
+        qr_code,
       });
       setMessageAlert({
         message: "QR Code gerado com sucesso.",
         variant: "success",
       });
+      if (exam) {
+        mutate({ ...exam, qr_code } as Exam, false);
+      }
     } catch (error) {
       setMessageAlert({
         message: "Erro ao gerar QR Code.",

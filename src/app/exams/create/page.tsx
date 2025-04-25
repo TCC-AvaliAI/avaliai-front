@@ -341,16 +341,33 @@ export default function CreateExamPage() {
 
   async function handleGenerateExam(data: ExamFormValues) {
     try {
-      await api.post("/exams/", {
-        ...data,
-      });
+      const payload = {
+        title: data.title,
+        description: data.description,
+        theme: data.theme,
+        discipline: data.discipline,
+        classroom: data.classroom,
+        questions:
+          questions.length > 0
+            ? questions.map((q) => ({
+                title: q.title,
+                options: q.options,
+                answer: q.answer,
+                answer_text: q.answer_text || String(q.answer),
+                score: q.score,
+                type: q.type,
+              }))
+            : undefined,
+      };
+
+      await api.post("/exams/", payload);
       setMessageAlert({
         message: "Prova gerada com sucesso!",
         variant: "success",
       });
     } catch (error) {
       setMessageAlert({
-        message: "Erro ao gerar a prova com IA.",
+        message: "Erro ao gerar a prova.",
         variant: "error",
       });
     }
