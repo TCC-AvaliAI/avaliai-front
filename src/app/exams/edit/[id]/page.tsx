@@ -20,21 +20,17 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FileText,
   Plus,
   Trash2,
   GripVertical,
   Copy,
-  Save,
-  Download,
-  QrCode,
   ChevronLeft,
   AlertCircle,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Header from "@/components/header";
+import { MessageAlertProps } from "@/components/message-alert";
 
-// Definição dos tipos
 type QuestionType = "multiple-choice" | "true-false" | "checkbox" | "essay";
 type DifficultyLevel = "easy" | "medium" | "hard";
 type ExamStatus = "draft" | "scheduled" | "active" | "completed" | "archived";
@@ -82,7 +78,6 @@ export default function EditExamPage() {
   const params = useParams();
   const examId = params.id as string;
 
-  // Dados simulados para sugestões de questões
   const suggestedQuestions: Record<DifficultyLevel, SuggestedQuestion[]> = {
     easy: [
       {
@@ -155,7 +150,6 @@ export default function EditExamPage() {
     ],
   };
 
-  // Estado para armazenar os dados do exame
   const [examInfo, setExamInfo] = useState<ExamInfo>({
     id: examId,
     title: "Avaliação de Matemática - 2º Bimestre",
@@ -171,7 +165,6 @@ export default function EditExamPage() {
     updatedAt: "12/03/2025",
   });
 
-  // Estado para armazenar as questões
   const [questions, setQuestions] = useState<Question[]>([
     {
       id: 1,
@@ -231,10 +224,12 @@ export default function EditExamPage() {
     },
   ]);
 
-  // Estado para controlar se houve alterações não salvas
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
 
-  // Atualizar o estado de alterações não salvas quando houver mudanças
   useEffect(() => {
     setHasUnsavedChanges(true);
   }, [examInfo, questions]);
@@ -383,14 +378,13 @@ export default function EditExamPage() {
   };
 
   const handleSave = () => {
-    // Simulação de salvamento
     setHasUnsavedChanges(false);
-    // Atualizar a data de atualização
+
     setExamInfo({
       ...examInfo,
       updatedAt: new Date().toLocaleDateString("pt-BR"),
     });
-    // Aqui seria feita a chamada para a API para salvar os dados
+
     alert("Prova salva com sucesso!");
   };
 
@@ -566,7 +560,7 @@ export default function EditExamPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
         <div className="flex items-center gap-2 mb-6">
           <Link href={`/exams/${examId}`}>

@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
 import { Exam } from "@/@types/ExamProps";
@@ -35,9 +34,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
-import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
+import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
-import { set } from "date-fns";
+import { useRouter } from "next/navigation";
 
 type DifficultyLevel = "easy" | "medium" | "hard";
 
@@ -64,6 +63,7 @@ const examFormSchema = z.object({
 type ExamFormValues = z.infer<typeof examFormSchema>;
 
 export default function CreateExamPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const { toast } = useToast();
   const form = useForm<ExamFormValues>({
@@ -98,7 +98,7 @@ export default function CreateExamPage() {
     theme: "",
     was_generated_by_ai: false,
     difficulty: "medium",
-    status: "PENDING",
+    status: "Pendente",
     discipline: "",
     classroom: "",
     questions: [],
@@ -331,6 +331,7 @@ export default function CreateExamPage() {
         message: "Prova gerada com sucesso!",
         variant: "success",
       });
+      router.push(`/exams/${response.data.id}`);
     } catch (error) {
       setMessageAlert({
         message: "Erro ao gerar a prova com IA.",
@@ -360,11 +361,12 @@ export default function CreateExamPage() {
             : undefined,
       };
 
-      await api.post("/exams/", payload);
+      const response = await api.post("/exams/", payload);
       setMessageAlert({
         message: "Prova gerada com sucesso!",
         variant: "success",
       });
+      router.push(`/exams/${response.data.id}`);
     } catch (error) {
       setMessageAlert({
         message: "Erro ao gerar a prova.",
@@ -375,14 +377,7 @@ export default function CreateExamPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
-      {messageAlert.message && (
-        <MessageAlert
-          variant={messageAlert.variant}
-          message={messageAlert.message}
-          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
-        />
-      )}
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">

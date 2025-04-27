@@ -169,14 +169,7 @@ export default function ManagementPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
-      {messageAlert.message && (
-        <MessageAlert
-          variant={messageAlert.variant}
-          message={messageAlert.message}
-          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
-        />
-      )}
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Gerenciamento</h1>

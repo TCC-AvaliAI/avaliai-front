@@ -117,14 +117,7 @@ export default function DashboardPage() {
   if (isLoading) return <Loading />;
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
-      <Header />
-      {messageAlert.message && (
-        <MessageAlert
-          variant={messageAlert.variant}
-          message={messageAlert.message}
-          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
-        />
-      )}
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -296,9 +289,11 @@ export default function DashboardPage() {
                           )}
                         </TableCell>
                         <TableCell className="max-w-xs break-words whitespace-normal">
-                          {questionType[
-                            question.type as keyof typeof questionType
-                          ]}
+                          {
+                            questionType[
+                              question.type as keyof typeof questionType
+                            ]
+                          }
                         </TableCell>
                         <TableCell className="max-w-xs break-words whitespace-normal">
                           {question.type === "ES"

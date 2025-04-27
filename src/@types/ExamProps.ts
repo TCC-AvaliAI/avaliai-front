@@ -1,6 +1,6 @@
 import { QuestionProps } from "./QuestionProps";
 
-export type ExamStatus = "APPLIED" | "PENDING" | "CANCELLED" | "ARCHIVED";
+export type ExamStatus = "Aplicada" | "Pendente" | "Cancelada" | "Arquivada";
 export type DifficultyLevel = "easy" | "medium" | "hard";
 
 export interface Exam {

@@ -47,13 +47,13 @@ import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 
 const renderStatusBadge = (status: ExamStatus) => {
   switch (status) {
-    case "PENDING":
+    case "Pendente":
       return <Badge variant="outline">Pendente</Badge>;
-    case "APPLIED":
+    case "Aplicada":
       return <Badge variant="default">Aplicada</Badge>;
-    case "CANCELLED":
+    case "Cancelada":
       return <Badge variant="destructive">Cancelada</Badge>;
-    case "ARCHIVED":
+    case "Arquivada":
       return <Badge variant="secondary">Arquivada</Badge>;
     default:
       return null;
@@ -228,14 +228,7 @@ export default function ExamDetailsPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
-      {messageAlert.message && (
-        <MessageAlert
-          variant={messageAlert.variant}
-          message={messageAlert.message}
-          onDismiss={() => setMessageAlert({ ...messageAlert, message: "" })}
-        />
-      )}
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
         <div className="flex items-center gap-2 mb-6">
           <Link href="/exams">

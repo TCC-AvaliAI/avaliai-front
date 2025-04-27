@@ -30,11 +30,15 @@ import { ExamActionsMenu } from "@/components/exam/exam-actions-menu";
 import { DifficultyLevel, Exam, ExamStatus } from "@/@types/ExamProps";
 import { Loading } from "@/components/loading/page";
 import { Discipline } from "@/@types/DisciplinesProps";
+import { MessageAlertProps } from "@/components/message-alert";
 
 export default function ExamsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
-
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
   const { data: exams = [], isLoading } = useSWR<Exam[]>(`/exams/`, fetcher);
   const { data: disciplines = [], isLoading: isLoadingDisciplines } = useSWR<
     Discipline[]
@@ -52,27 +56,27 @@ export default function ExamsPage() {
   });
 
   const appliedExams = filteredExams.filter(
-    (exam) => exam.status === "APPLIED"
+    (exam) => exam.status === "Aplicada"
   );
   const pendingExams = filteredExams.filter(
-    (exam) => exam.status === "PENDING"
+    (exam) => exam.status === "Pendente"
   );
   const cancelledExams = filteredExams.filter(
-    (exam) => exam.status === "CANCELLED"
+    (exam) => exam.status === "Cancelada"
   );
   const archivedExams = filteredExams.filter(
-    (exam) => exam.status === "ARCHIVED"
+    (exam) => exam.status === "Arquivada"
   );
 
   const renderStatusBadge = (status: ExamStatus) => {
     switch (status) {
-      case "APPLIED":
+      case "Aplicada":
         return <Badge variant="default">Aplicada</Badge>;
-      case "PENDING":
+      case "Pendente":
         return <Badge variant="secondary">Pendente</Badge>;
-      case "CANCELLED":
+      case "Cancelada":
         return <Badge variant="destructive">Cancelada</Badge>;
-      case "ARCHIVED":
+      case "Arquivada":
         return <Badge variant="outline">Arquivada</Badge>;
     }
   };
@@ -104,7 +108,7 @@ export default function ExamsPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Minhas Provas</h1>
@@ -151,16 +155,16 @@ export default function ExamsPage() {
             <TabsTrigger value="all">
               Todas ({filteredExams.length})
             </TabsTrigger>
-            <TabsTrigger value="APPLIED">
+            <TabsTrigger value="Aplicada">
               Aplicadas ({appliedExams.length})
             </TabsTrigger>
-            <TabsTrigger value="PENDING">
+            <TabsTrigger value="Pendente">
               Pendentes ({pendingExams.length})
             </TabsTrigger>
-            <TabsTrigger value="CANCELLED">
+            <TabsTrigger value="Cancelada">
               Canceladas ({cancelledExams.length})
             </TabsTrigger>
-            <TabsTrigger value="ARCHIVED">
+            <TabsTrigger value="Arquivada">
               Arquivadas ({archivedExams.length})
             </TabsTrigger>
           </TabsList>
@@ -222,7 +226,7 @@ export default function ExamsPage() {
                           </span>
                           <span>{exam.duration} minutos</span>
                         </div>
-                        {exam.status === "PENDING" && exam.applied_at && (
+                        {exam.status === "Pendente" && exam.applied_at && (
                           <div className="flex items-center">
                             <span className="w-24 text-muted-foreground">
                               Agendada:
@@ -266,10 +270,10 @@ export default function ExamsPage() {
           </TabsContent>
 
           {[
-            { value: "APPLIED", exams: appliedExams, title: "Aplicadas" },
-            { value: "PENDING", exams: pendingExams, title: "Pendentes" },
-            { value: "CANCELLED", exams: cancelledExams, title: "Canceladas" },
-            { value: "ARCHIVED", exams: archivedExams, title: "Arquivadas" },
+            { value: "Aplicada", exams: appliedExams, title: "Aplicadas" },
+            { value: "Pendente", exams: pendingExams, title: "Pendentes" },
+            { value: "Cancelada", exams: cancelledExams, title: "Canceladas" },
+            { value: "Arquivada", exams: archivedExams, title: "Arquivadas" },
           ].map((tab) => (
             <TabsContent key={tab.value} value={tab.value}>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -316,7 +320,7 @@ export default function ExamsPage() {
                             </span>
                             <span>{exam.duration} minutos</span>
                           </div>
-                          {exam.status === "PENDING" && exam.applied_at && (
+                          {exam.status === "Pendente" && exam.applied_at && (
                             <div className="flex items-center">
                               <span className="w-24 text-muted-foreground">
                                 Agendada:

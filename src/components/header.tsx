@@ -7,8 +7,15 @@ import { signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useSession } from "next-auth/react";
 import api from "@/lib/axios";
+import { MessageAlert, MessageAlertProps } from "./message-alert";
+import React from "react";
 
-const Header = () => {
+interface HeaderProps {
+  message: MessageAlertProps;
+  setMessage: React.Dispatch<React.SetStateAction<MessageAlertProps>>;
+}
+
+const Header = ({ message, setMessage }: HeaderProps) => {
   const { data: session } = useSession();
   const userName = session?.name;
   const userAvatar = session?.image;
@@ -24,55 +31,64 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background">
-      <div className="container flex h-16 items-center justify-between py-4">
-        <div className="flex items-center gap-2">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">AvaliAi</h1>
-          </Link>
-        </div>
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="/dashboard" className="text-sm font-medium">
-            Dashboard
-          </Link>
-          <Link href="/exams" className="text-sm font-medium">
-            Provas
-          </Link>
-          <Link href="/question-bank" className="text-sm font-medium">
-            Banco de Questões
-          </Link>
-          <Link
-            href="/discipline-and-classroom"
-            className="text-sm font-medium"
-          >
-            Turmas e Classes
-          </Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          {session ? (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={userAvatar} alt={userName} />
-                <AvatarFallback>{userName}</AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium hidden md:inline-block">
-                Olá, {userName?.toLocaleLowerCase()}
-              </span>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                Sair
-              </Button>
-            </div>
-          ) : (
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Entrar
-              </Button>
+    <>
+      <header className="sticky top-0 z-10 border-b bg-background">
+        <div className="container flex h-16 items-center justify-between py-4">
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <FileText className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">AvaliAi</h1>
             </Link>
-          )}
+          </div>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/dashboard" className="text-sm font-medium">
+              Dashboard
+            </Link>
+            <Link href="/exams" className="text-sm font-medium">
+              Provas
+            </Link>
+            <Link href="/question-bank" className="text-sm font-medium">
+              Banco de Questões
+            </Link>
+            <Link
+              href="/discipline-and-classroom"
+              className="text-sm font-medium"
+            >
+              Turmas e Classes
+            </Link>
+          </nav>
+          <div className="flex items-center gap-4">
+            {session ? (
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userAvatar} alt={userName} />
+                  <AvatarFallback>{userName}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium hidden md:inline-block">
+                  Olá, {userName?.toLocaleLowerCase()}
+                </span>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  Sair
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  Entrar
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      {message.message && (
+        <MessageAlert
+          variant={message.variant}
+          message={message.message}
+          onDismiss={() => setMessage({ ...message, message: "" })}
+        />
+      )}
+    </>
   );
 };
 

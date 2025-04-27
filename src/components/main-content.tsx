@@ -10,11 +10,18 @@ import {
 } from "@/components/ui/card";
 import { FileText, Database, CheckCircle } from "lucide-react";
 import Header from "@/components/header";
+import { useState } from "react";
+import { MessageAlertProps } from "./message-alert";
 
 export default function MainContent() {
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
         <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background to-muted">
           <div className="container px-4 md:px-6">
