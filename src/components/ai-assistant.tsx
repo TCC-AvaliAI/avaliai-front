@@ -1,39 +1,21 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import {
-  Send,
-  Minimize2,
-  BotMessageSquare,
-  User,
-  Loader2,
-  X,
-} from "lucide-react";
+import { Send, Minimize2, BotMessageSquare, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSession } from "next-auth/react";
-import { Session } from "next-auth";
 import {
   AIAssistantProps,
   Message,
   MessageRole,
-  SuggestionProps,
+  ResponseMessage,
 } from "@/@types/Message";
 import { ChatMessage } from "./chat-messages";
-
-const Suggestion = ({ text, onClick }: SuggestionProps) => (
-  <Button
-    variant="outline"
-    size="sm"
-    className="text-xs h-auto py-1.5 px-3 whitespace-normal text-left justify-start font-normal text-muted-foreground"
-    onClick={onClick}
-  >
-    {text}
-  </Button>
-);
+import { Suggestion } from "./sugestion-quetions";
+import api from "@/lib/axios";
 
 export function AIAssistant({ className }: AIAssistantProps) {
   const { data: session } = useSession();
@@ -42,7 +24,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
       id: "default",
       role: "assistant" as MessageRole,
       content: "Como posso ajudar você com seu exame?",
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     },
   ]);
   const [input, setInput] = useState("");
@@ -64,46 +46,20 @@ export function AIAssistant({ className }: AIAssistantProps) {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const simulateAIResponse = async (userMessage: string) => {
-    setIsLoading(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    let responseContent = "";
-
-    if (userMessage.toLowerCase().includes("massa")) {
-      responseContent = "A massa de um corpo de 10 kg é 10 kg.";
-    } else if (userMessage.toLowerCase().includes("velocidade média")) {
-      responseContent =
-        "A velocidade média é a distância total dividida pelo tempo total.";
-    } else {
-      responseContent = "Desculpe, não entendi sua pergunta.";
-    }
-
-    const aiMessage = {
-      id: session?.id as string,
-      role: "assistant" as MessageRole,
-      content: responseContent,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, aiMessage]);
-    setIsLoading(false);
-  };
-
   const handleSendMessage = async (messageText?: string) => {
     const messageContent = messageText || input;
     if (!messageContent.trim() || isLoading) return;
-    const userMessage = {
-      id: session?.id as string,
-      role: "user" as MessageRole,
-      content: messageContent.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    await simulateAIResponse(messageContent);
+    try {
+      setIsLoading(true);
+      const reponse = await api.post("/messages/", {
+        content: messageContent,
+      });
+      const { user_message, assistant_message } =
+        reponse.data as ResponseMessage;
+      setMessages((prev) => [...prev, user_message, assistant_message]);
+      setInput("");
+      setIsLoading(false);
+    } catch (error) {}
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -188,7 +144,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
               <div className="flex items-center gap-2 py-2 px-4">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 <span className="text-xs text-muted-foreground">
-                  Assistente está digitando...
+                  Pesquisando...
                 </span>
               </div>
             )}
