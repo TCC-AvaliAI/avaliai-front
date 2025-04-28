@@ -123,7 +123,7 @@ export default function ExamDetailsPage() {
 
   async function handleGenerateQRCode() {
     try {
-      const apiFront = process.env.NEXT_PUBLIC_URL;
+      const apiFront = process.env.NEXTAUTH_URL;
       const qr_code = `${apiFront}/exams/${examId}`;
       await api.patch(`/exams/${examId}/qrcode/`, {
         qr_code,

@@ -56,7 +56,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
     },
   ],
   secret: process.env.NEXTAUTH_SECRET,
-
+  trustHost: true,
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account && profile) {
@@ -66,47 +66,55 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
         token.email = profile.email_google_classroom as string;
         token.image = profile.foto as string;
         token.idToken = account.id_token;
+        token.expiresAt = account.expires_at;
       }
+      if (token.expiresAt && Date.now() > token.expiresAt * 1000 - 300000) {
+        try {
+          const newTokens = await refreshAccessToken(
+            token.refreshToken as string
+          );
+          token.accessToken = newTokens.accessToken;
+          token.refreshToken = newTokens.refreshToken;
+
+          token.expiresAt = Math.floor(Date.now() / 1000) + 36000;
+        } catch (error) {
+          token.error = "RefreshAccessTokenError";
+          return token;
+        }
+      }
+
       return token;
     },
 
     async session({ session, token }) {
-      if (!token.accessToken) return session;
-
-      try {
-        const user = await loginWithAccessToken(token.accessToken);
-        session.id = user.id;
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          try {
-            const newTokens = await refreshAccessToken(
-              token.refreshToken as string
-            );
-            token.accessToken = newTokens.accessToken;
-            token.refreshToken = newTokens.refreshToken;
-
-            const user = await loginWithAccessToken(newTokens.accessToken);
-            session.id = user.id;
-          } catch (refreshError) {
-            token.isAuthenticated = false;
-            await signOut({ redirect: false });
-
-            if (typeof window !== "undefined") {
-              window.sessionStorage.clear();
-              NextResponse.redirect("/login");
-            }
-          }
+      if (token.error === "RefreshAccessTokenError") {
+        await signOut({ redirect: false });
+        if (typeof window !== "undefined") {
+          window.sessionStorage.clear();
+          window.location.href = "/login";
         }
+        return null as any;
       }
 
-      // Atualiza os dados da sessão
-      token.isAuthenticated = true;
-      session.accessToken = token.accessToken;
-      session.refreshToken = token.refreshToken;
-      session.name = token.name;
-      session.email = token.email;
-      session.image = token.image;
-      session.idToken = token.idToken;
+      try {
+        const user = await loginWithAccessToken(token.accessToken as string);
+        session.id = user.id;
+        session.accessToken = token.accessToken;
+        session.refreshToken = token.refreshToken;
+        session.name = token.name;
+        session.email = token.email;
+        session.image = token.image;
+        session.idToken = token.idToken;
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          await signOut({ redirect: false });
+          if (typeof window !== "undefined") {
+            window.sessionStorage.clear();
+            window.location.href = "/login";
+          }
+          return null as any;
+        }
+      }
 
       return session;
     },
