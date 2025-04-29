@@ -79,7 +79,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
 
   const getSuggestions = () => {
     return [
-      "Qual a massa de um corpo de 10 kg?",
+      "Qual foi o estopim da segunda guerra?",
       "Como calcular a velocidade média?",
     ];
   };

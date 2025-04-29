@@ -55,11 +55,10 @@ export default function QuestionBankPage() {
     `/questions/?user=${session?.id}`,
     fetcher
   );
-  if (isLoading) return <Loading />;
-
-  const filteredQuestions = questions!.filter((q) =>
-    q.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredQuestions =
+    questions?.filter((q) =>
+      q.title.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
   const handleNewQuestionChange = (field: keyof QuestionProps, value: any) => {
     setNewQuestion({
@@ -107,18 +106,13 @@ export default function QuestionBankPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header message={messageAlert} setMessage={setMessageAlert} />
+      {isLoading && <Loading />}
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">
             Banco de Questões
           </h1>
           <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Questão
-              </Button>
-            </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Adicionar Nova Questão</DialogTitle>
@@ -236,7 +230,7 @@ export default function QuestionBankPage() {
             <TabsTrigger value="ES">Dissertativa</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="space-y-4">
-            {filteredQuestions.length > 0 ? (
+            {!isLoading && filteredQuestions.length > 0 ? (
               filteredQuestions.map((question) => (
                 <Card key={question.id}>
                   <CardContent className="pt-6">
@@ -293,8 +287,9 @@ export default function QuestionBankPage() {
                   Nenhuma questão encontrada
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Tente ajustar seus filtros ou adicione novas questões ao
-                  banco.
+                  {isLoading
+                    ? "Carregando questões..."
+                    : "Tente ajustar seus filtros ou adicione novas questões ao banco."}
                 </p>
               </div>
             )}
@@ -361,8 +356,9 @@ export default function QuestionBankPage() {
                     Nenhuma questão encontrada
                   </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Tente ajustar seus filtros ou adicione novas questões ao
-                    banco.
+                    {isLoading
+                      ? "Carregando questões..."
+                      : "Tente ajustar seus filtros ou adicione novas questões ao banco."}
                   </p>
                 </div>
               )}
