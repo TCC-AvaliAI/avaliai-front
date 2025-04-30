@@ -71,7 +71,7 @@ export default function ExamsPage() {
   const renderStatusBadge = (status: ExamStatus) => {
     switch (status) {
       case "Aplicada":
-        return <Badge variant="default">Aplicada</Badge>;
+        return <Badge className="bg-green-600 text-white">Aplicada</Badge>;
       case "Pendente":
         return <Badge variant="secondary">Pendente</Badge>;
       case "Cancelada":
