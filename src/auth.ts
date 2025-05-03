@@ -67,13 +67,37 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
           session.image = token.image;
           session.idToken = token.idToken;
         } catch (error: any) {
-          if (error.response?.status === 401) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
             token.isAuthenticated = false;
-            return { ...session, user: undefined };
+            token.accessToken = undefined;
+            token.refreshToken = undefined;
+            session.accessToken = undefined;
+            session.refreshToken = undefined;
+            session.user = {
+              id: "",
+              email: "",
+              name: "",
+              image: "",
+              emailVerified: null
+            };
+            session.id = "";
+            session.email = "";
+            session.name = "";
+            session.image = "";
+            session.idToken = undefined;
+
+            if (typeof window !== "undefined") {
+              window.sessionStorage.clear();
+              await signOut({
+                redirect: true,
+                redirectTo: "/login"
+              });
+            }
+            return session;
           }
+          throw error;
         }
       }
-
       return session;
     },
   },

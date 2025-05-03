@@ -51,12 +51,20 @@ export function AIAssistant({ className }: AIAssistantProps) {
     if (!messageContent.trim() || isLoading) return;
     try {
       setIsLoading(true);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "user" as MessageRole,
+          content: messageContent,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
       const reponse = await api.post("/messages/", {
         content: messageContent,
       });
-      const { user_message, assistant_message } =
-        reponse.data as ResponseMessage;
-      setMessages((prev) => [...prev, user_message, assistant_message]);
+      const { assistant_message } = reponse.data as ResponseMessage;
+      setMessages((prev) => [...prev, assistant_message]);
       setInput("");
       setIsLoading(false);
     } catch (error) {}
