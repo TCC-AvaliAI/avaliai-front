@@ -84,17 +84,6 @@ export default function CreateExamPage() {
   const { data: disciplines } = useSWR(`/disciplines/`, fetcher);
   const { data: classrooms } = useSWR(`/classrooms/`, fetcher);
 
-  useEffect(() => {
-    if (exam) {
-      console.log(exam);
-      setQuestions(
-        exam.questions.map((question) => ({
-          ...question,
-        }))
-      );
-    }
-  },[]);
-
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examFormSchema),
     defaultValues: {
@@ -105,6 +94,16 @@ export default function CreateExamPage() {
       classroom: exam?.classroom || "",
     },
   });
+
+  useEffect(() => {
+    if (exam) {
+      setQuestions(
+        exam.questions.map((question) => ({
+          ...question,
+        }))
+      );
+    }
+  }, []);
 
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
@@ -156,15 +155,30 @@ export default function CreateExamPage() {
   };
 
   async function handleGenerateQuestionByAI(data: ExamFormValues) {
+    if (!data.theme || !data.title)
+      return setMessageAlert({
+        message: "Os campos tema e título são obrigatórios.",
+        variant: "error",
+      });
     setIsLoading(true);
     try {
+      const response = await api.post("/questions/ai/", {
+        description: `Crie UMA questão para a prova ${data.title} com o tema ${data.theme}`,
+      });
+      const questionByAi = response.data;
+      setQuestions((prev) => [
+        ...prev,
+        {
+          ...questionByAi,
+        },
+      ]);
       setMessageAlert({
-        message: "Prova gerada com sucesso!",
+        message: "Questão gerada com sucesso!",
         variant: "success",
       });
     } catch (error) {
       setMessageAlert({
-        message: "Erro ao gerar a prova com IA.",
+        message: "Erro ao gerar a questão com IA.",
         variant: "error",
       });
     } finally {
@@ -216,9 +230,7 @@ export default function CreateExamPage() {
         {isLoading && <Loading />}
         <main className="flex-1 container py-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Criar Nova Prova
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">Editar prova</h1>
           </div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -358,7 +370,7 @@ export default function CreateExamPage() {
                             )}
                             disabled={!form.formState.isValid}
                           >
-                            Gerar prova com IA
+                            Gerar questão com IA
                           </Button>
                           <Button
                             type="submit"
