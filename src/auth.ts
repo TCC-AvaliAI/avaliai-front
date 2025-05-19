@@ -46,7 +46,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token.accessToken) {
+      if (token.accessToken && !token.isAuthenticated) {
         try {
           const response = await api.post(
             "/user/login/suap/",
@@ -97,6 +97,14 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
           }
           throw error;
         }
+      } else if (token.isAuthenticated && token.accessToken) {
+        session.id = session.id;
+        session.accessToken = token.accessToken;
+        session.refreshToken = token.refreshToken;
+        session.name = token.name;
+        session.email = token.email;
+        session.image = token.image;
+        session.idToken = token.idToken;
       }
       return session;
     },
