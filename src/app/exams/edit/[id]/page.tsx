@@ -68,7 +68,6 @@ type ExamFormValues = z.infer<typeof examFormSchema>;
 export default function CreateExamPage() {
   const params = useParams();
   const examId = params.id;
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const {
     questions,
@@ -153,21 +152,6 @@ export default function CreateExamPage() {
       ),
     };
     return questionComponent[question.type as QuestionType] || null;
-  };
-
-  const onSubmit = async (data: ExamFormValues) => {
-    try {
-      toast({
-        title: "Sucesso!",
-        description: "Formulário validado com sucesso.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro!",
-        description: "Ocorreu um erro ao processar o formulário.",
-        variant: "destructive",
-      });
-    }
   };
 
   async function handleDeleteQuestion(id: string) {
@@ -262,6 +246,31 @@ export default function CreateExamPage() {
     }
   }
 
+  async function handleUpdateQuestion(question: QuestionProps) {
+    setIsLoading(true);
+    try {
+      await api.put(`/questions/${question.id}`, {
+        title: question.title,
+        options: question.options,
+        answer: question.answer,
+        answer_text: question.answer_text || String(question.answer),
+        score: question.score,
+        type: question.type,
+      });
+      setMessageAlert({
+        message: "Questão atualizada com sucesso!",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao atualizar a questão.",
+        variant: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <>
       <div className="flex min-h-screen flex-col">
@@ -272,7 +281,7 @@ export default function CreateExamPage() {
             <h1 className="text-3xl font-bold tracking-tight">Editar prova</h1>
           </div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={() => setIsLoading(true)} className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                   <Card>
@@ -449,7 +458,7 @@ export default function CreateExamPage() {
                               <Input
                                 id={`question-${question.id}-points`}
                                 type="number"
-                                min="1"
+                                min="0"
                                 className="w-16 h-8"
                                 value={question.score}
                                 onChange={(e) =>
@@ -480,6 +489,15 @@ export default function CreateExamPage() {
                           </div>
                         </div>
                         {renderQuestionEditor(question)}
+                        <div className="flex justify-end">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleUpdateQuestion(question)}
+                            disabled={!form.formState.isValid}
+                          >
+                            Salvar Questão
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
