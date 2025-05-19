@@ -40,6 +40,8 @@ import { MCQuestion } from "@/components/questions/mc-question";
 import { TFQuestion } from "@/components/questions/tf-question";
 import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
+import { Badge } from "@/components/ui/badge";
+import { set } from "date-fns";
 
 type DisciplineProps = {
   id: string;
@@ -97,13 +99,27 @@ export default function CreateExamPage() {
 
   useEffect(() => {
     if (exam) {
-      setQuestions(
-        exam.questions.map((question) => ({
-          ...question,
-        }))
+      const savedQuestions = localStorage.getItem(`exam_questions_${examId}`);
+      if (savedQuestions) {
+        setQuestions(JSON.parse(savedQuestions));
+      } else {
+        setQuestions(
+          exam.questions.map((question) => ({
+            ...question,
+          }))
+        );
+      }
+    }
+  }, [exam]);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      localStorage.setItem(
+        `exam_questions_${examId}`,
+        JSON.stringify(questions)
       );
     }
-  }, []);
+  }, [questions, examId]);
 
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
@@ -154,6 +170,22 @@ export default function CreateExamPage() {
     }
   };
 
+  async function handleDeleteQuestion(id: string) {
+    try {
+      await api.delete(`/questions/${id}`);
+      removeQuestion(id);
+      setMessageAlert({
+        message: "Questão deletada com sucesso",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao deletar a questão",
+        variant: "error",
+      });
+    }
+  }
+
   async function handleGenerateQuestionByAI(data: ExamFormValues) {
     if (!data.theme || !data.title)
       return setMessageAlert({
@@ -166,12 +198,19 @@ export default function CreateExamPage() {
         description: `Crie UMA questão para a prova ${data.title} com o tema ${data.theme}`,
       });
       const questionByAi = response.data;
-      setQuestions((prev) => [
-        ...prev,
+      console.log("questionByAi", questionByAi);
+      const newQuestions = [
         {
           ...questionByAi,
+          was_generated_by_ai: true,
         },
-      ]);
+        ...questions,
+      ];
+      setQuestions(newQuestions);
+      localStorage.setItem(
+        `exam_questions_${examId}`,
+        JSON.stringify(newQuestions)
+      );
       setMessageAlert({
         message: "Questão gerada com sucesso!",
         variant: "success",
@@ -242,7 +281,7 @@ export default function CreateExamPage() {
                         <FormField
                           control={form.control}
                           name="title"
-                          render={({ field }) => (
+                          render={({ field }: any) => (
                             <FormItem>
                               <FormLabel>Título da Prova</FormLabel>
                               <FormControl>
@@ -260,7 +299,7 @@ export default function CreateExamPage() {
                           <FormField
                             control={form.control}
                             name="discipline"
-                            render={({ field }) => (
+                            render={({ field }: any) => (
                               <FormItem>
                                 <FormLabel>Disciplina</FormLabel>
                                 <Select onValueChange={field.onChange}>
@@ -295,7 +334,7 @@ export default function CreateExamPage() {
                           <FormField
                             control={form.control}
                             name="classroom"
-                            render={({ field }) => (
+                            render={({ field }: any) => (
                               <FormItem>
                                 <FormLabel>Série/Turma</FormLabel>
                                 <Select onValueChange={field.onChange}>
@@ -330,7 +369,7 @@ export default function CreateExamPage() {
                         <FormField
                           control={form.control}
                           name="theme"
-                          render={({ field }) => (
+                          render={({ field }: any) => (
                             <FormItem>
                               <FormLabel>Tema</FormLabel>
                               <FormControl>
@@ -347,7 +386,7 @@ export default function CreateExamPage() {
                         <FormField
                           control={form.control}
                           name="description"
-                          render={({ field }) => (
+                          render={({ field }: any) => (
                             <FormItem>
                               <FormLabel>Descrição/Instruções</FormLabel>
                               <FormControl>
@@ -365,7 +404,7 @@ export default function CreateExamPage() {
                           <Button
                             type="button"
                             variant="secondary"
-                            onClick={form.handleSubmit((data) =>
+                            onClick={form.handleSubmit((data: any) =>
                               handleGenerateQuestionByAI(data)
                             )}
                             disabled={!form.formState.isValid}
@@ -375,7 +414,7 @@ export default function CreateExamPage() {
                           <Button
                             type="submit"
                             disabled={!form.formState.isValid}
-                            onClick={form.handleSubmit((data) =>
+                            onClick={form.handleSubmit((data: any) =>
                               handleUpdateExam(data)
                             )}
                           >
@@ -387,7 +426,12 @@ export default function CreateExamPage() {
                   </Card>
 
                   {questions.map((question, index) => (
-                    <Card key={question.id} className="relative">
+                    <Card
+                      key={question.id}
+                      className={`relative ${
+                        question.was_generated_by_ai ? "border-green-500" : ""
+                      }`}
+                    >
                       <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-2">
@@ -426,10 +470,13 @@ export default function CreateExamPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => removeQuestion(question.id!)}
+                              onClick={() => handleDeleteQuestion(question.id!)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
+                            <Badge>
+                              {question.was_generated_by_ai ? "IA" : "Você"}
+                            </Badge>
                           </div>
                         </div>
                         {renderQuestionEditor(question)}

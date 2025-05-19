@@ -8,6 +8,7 @@ export interface QuestionProps {
   type: QuestionType;
   user: string;
   created_at: string;
+  was_generated_by_ai?: boolean;
 }
 
 export type QuestionType = "MC" | "TF" | "ES";
