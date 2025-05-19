@@ -14,12 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
-import { Exam } from "@/@types/ExamProps";
-import { v4 as uuidv4 } from "uuid";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { useSession } from "next-auth/react";
@@ -100,24 +97,6 @@ export default function CreateExamPage() {
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
     variant: "success",
-  });
-  const [examInfo, setExamInfo] = useState<Exam>({
-    id: "",
-    user: "",
-    title: "",
-    duration: 0,
-    score: 0,
-    created_at: "",
-    applied_at: "",
-    qr_code: "",
-    description: "",
-    theme: "",
-    was_generated_by_ai: false,
-    difficulty: "medium",
-    status: "Pendente",
-    discipline: "",
-    classroom: "",
-    questions: [],
   });
 
   const renderQuestionEditor = (question: QuestionProps) => {

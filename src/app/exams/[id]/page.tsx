@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { redirect, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,21 +43,17 @@ import useSWR from "swr";
 import { Loading } from "@/components/loading/page";
 import QRCode from "react-qr-code";
 import api from "@/lib/axios";
-import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
+import { MessageAlertProps } from "@/components/message-alert";
 
-const renderStatusBadge = (status: ExamStatus) => {
-  switch (status) {
-    case "Pendente":
-      return <Badge variant="outline">Pendente</Badge>;
-    case "Aplicada":
-      return <Badge variant="default">Aplicada</Badge>;
-    case "Cancelada":
-      return <Badge variant="destructive">Cancelada</Badge>;
-    case "Arquivada":
-      return <Badge variant="secondary">Arquivada</Badge>;
-    default:
-      return null;
-  }
+const renderStatusBadge = (status: ExamStatus | undefined) => {
+  if (!status) return null;
+  const examStatus = {
+    Pendente: <Badge variant="outline">Pendente</Badge>,
+    Aplicada: <Badge variant="default">Aplicada</Badge>,
+    Cancelada: <Badge variant="destructive">Cancelada</Badge>,
+    Arquivada: <Badge variant="secondary">Arquivada</Badge>,
+  };
+  return examStatus[status];
 };
 
 const renderDifficultyBadge = (difficulty: DifficultyLevel) => {
@@ -108,17 +104,22 @@ export default function ExamDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const examId = params.id as string;
-  const [showQrCode, setShowQrCode] = useState(false);
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
 
   const {
     data: exam,
     isLoading,
     mutate,
   } = useSWR<Exam>(`/exams/${examId}`, fetcher);
+
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [examStatus, setExamStatus] = useState<ExamStatus | undefined>(
+    exam?.status
+  );
+  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
+    message: "",
+    variant: "success",
+  });
+
   if (isLoading || !exam) return <Loading />;
 
   async function handleGenerateQRCode() {
@@ -245,7 +246,7 @@ export default function ExamDetailsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {renderStatusBadge(exam.status)}
+                  {renderStatusBadge(examStatus)}
                   {renderDifficultyBadge(exam.difficulty)}
                   <Badge
                     variant="outline"
@@ -267,13 +268,13 @@ export default function ExamDetailsPage() {
                       <span className="w-32 text-sm text-muted-foreground">
                         Disciplina:
                       </span>
-                      <span className="text-sm">{exam.discipline}</span>
+                      <span className="text-sm">{exam.discipline.name}</span>
                     </div>
                     <div className="flex items-center">
                       <span className="w-32 text-sm text-muted-foreground">
                         Turma:
                       </span>
-                      <span className="text-sm">{exam.classroom}</span>
+                      <span className="text-sm">{exam.classroom.name}</span>
                     </div>
                     <div className="flex items-center">
                       <span className="w-32 text-sm text-muted-foreground">
@@ -495,10 +496,6 @@ export default function ExamDetailsPage() {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full justify-start" variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Baixar Resultados (CSV)
-                </Button>
                 <Button
                   className="w-full justify-start"
                   variant="outline"

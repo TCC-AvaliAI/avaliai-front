@@ -49,9 +49,9 @@ export default function ExamsPage() {
   const filteredExams = exams.filter((exam) => {
     const matchesSearch =
       exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      exam.discipline.toLowerCase().includes(searchTerm.toLowerCase());
+      exam.discipline.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject =
-      subjectFilter === "all" || exam.discipline === subjectFilter;
+      subjectFilter === "all" || exam.discipline.name === subjectFilter;
     return matchesSearch && matchesSubject;
   });
 
@@ -189,13 +189,13 @@ export default function ExamsPage() {
                           <span className="w-24 text-muted-foreground">
                             Disciplina:
                           </span>
-                          <span>{exam.discipline}</span>
+                          <span>{exam.discipline.name}</span>
                         </div>
                         <div className="flex items-center">
                           <span className="w-24 text-muted-foreground">
                             Turma:
                           </span>
-                          <span>{exam.classroom}</span>
+                          <span>{exam.classroom.name}</span>
                         </div>
                         <div className="flex items-center">
                           <span className="w-24 text-muted-foreground">
@@ -298,13 +298,13 @@ export default function ExamsPage() {
                             <span className="w-24 text-muted-foreground">
                               Disciplina:
                             </span>
-                            <span>{exam.discipline}</span>
+                            <span>{exam.discipline.name}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-24 text-muted-foreground">
                               Turma:
                             </span>
-                            <span>{exam.classroom}</span>
+                            <span>{exam.classroom.name}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-24 text-muted-foreground">

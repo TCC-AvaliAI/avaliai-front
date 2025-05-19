@@ -1,3 +1,5 @@
+import { Classroom } from "./ClassroomProps";
+import { Discipline } from "./DisciplinesProps";
 import { QuestionProps } from "./QuestionProps";
 
 export type ExamStatus = "Aplicada" | "Pendente" | "Cancelada" | "Arquivada";
@@ -17,7 +19,7 @@ export interface Exam {
   was_generated_by_ai: boolean;
   difficulty: DifficultyLevel;
   status: ExamStatus;
-  discipline: string;
-  classroom: string;
+  discipline: Discipline;
+  classroom: Classroom;
   questions: QuestionProps[];
 }

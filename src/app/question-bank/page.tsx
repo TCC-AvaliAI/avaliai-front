@@ -98,9 +98,8 @@ export default function QuestionBankPage() {
     <div className="flex min-h-screen flex-col">
       <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
-        {isLoading ? (
-          <Loading />
-        ) : questions && questions.results ? (
+        {isLoading && <Loading />}
+        {questions && questions.results ? (
           <div className="flex flex-col gap-8">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold tracking-tight">
@@ -118,6 +117,9 @@ export default function QuestionBankPage() {
                   </TableHead>
                   <TableHead className="max-w-xs break-words whitespace-normal text-base">
                     Tipo
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                    Criado por
                   </TableHead>
                   <TableHead className="max-w-xs break-words whitespace-normal text-base">
                     Resposta Correta
@@ -145,6 +147,9 @@ export default function QuestionBankPage() {
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       {questionType[question.type as keyof typeof questionType]}
+                    </TableCell>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {question.was_generated_by_ai ? "IA" : "Você"}
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       {question.type === "ES"

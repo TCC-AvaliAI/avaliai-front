@@ -91,34 +91,27 @@ export default function CreateExamPage() {
       title: exam?.title || "",
       description: exam?.description || "",
       theme: exam?.theme || "",
-      discipline: exam?.discipline || "",
-      classroom: exam?.classroom || "",
+      discipline: exam?.discipline.id || "",
+      classroom: exam?.classroom.id || "",
     },
   });
 
   useEffect(() => {
     if (exam) {
-      const savedQuestions = localStorage.getItem(`exam_questions_${examId}`);
-      if (savedQuestions) {
-        setQuestions(JSON.parse(savedQuestions));
-      } else {
-        setQuestions(
-          exam.questions.map((question) => ({
-            ...question,
-          }))
-        );
-      }
-    }
-  }, [exam]);
-
-  useEffect(() => {
-    if (questions.length > 0) {
-      localStorage.setItem(
-        `exam_questions_${examId}`,
-        JSON.stringify(questions)
+      setQuestions(
+        exam.questions.map((question) => ({
+          ...question,
+        }))
       );
+      form.reset({
+        title: exam.title || "",
+        description: exam.description || "",
+        theme: exam.theme || "",
+        discipline: exam.discipline.id || "",
+        classroom: exam.classroom.id || "",
+      });
     }
-  }, [questions, examId]);
+  }, [exam, form]);
 
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
@@ -186,15 +179,11 @@ export default function CreateExamPage() {
       const newQuestions = [
         {
           ...questionByAi,
-          was_generated_by_ai: true,
+          not_attached: true,
         },
         ...questions,
       ];
       setQuestions(newQuestions);
-      localStorage.setItem(
-        `exam_questions_${examId}`,
-        JSON.stringify(newQuestions)
-      );
       setMessageAlert({
         message: "Questão gerada com sucesso!",
         variant: "success",
@@ -218,20 +207,9 @@ export default function CreateExamPage() {
         theme: data.theme,
         discipline: data.discipline,
         classroom: data.classroom,
-        questions:
-          questions.length > 0
-            ? questions.map((q) => ({
-                title: q.title,
-                options: q.options,
-                answer: q.answer,
-                answer_text: q.answer_text || String(q.answer),
-                score: q.score,
-                type: q.type,
-              }))
-            : undefined,
       };
-
-      await api.post(`/exams/${examId}`, payload);
+      console.log("payload", payload);
+      await api.put(`/exams/${examId}`, payload);
       setMessageAlert({
         message: "Prova gerada com sucesso!",
         variant: "success",
@@ -264,6 +242,31 @@ export default function CreateExamPage() {
     } catch (error) {
       setMessageAlert({
         message: "Erro ao atualizar a questão.",
+        variant: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleAddQuestionToExam(id: string) {
+    setIsLoading(true);
+    try {
+      await api.post(`/exams/${examId}/questions/`, {
+        question_id: id,
+      });
+      const updatedQuestions = questions.map((question) => ({
+        ...question,
+        not_attached: false,
+      }));
+      setQuestions(updatedQuestions);
+      setMessageAlert({
+        message: "Questão anexada à prova com sucesso!",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao anexar a questão à prova.",
         variant: "error",
       });
     } finally {
@@ -316,7 +319,7 @@ export default function CreateExamPage() {
                                     <SelectTrigger>
                                       <SelectValue
                                         placeholder={
-                                          field.value ||
+                                          exam?.discipline.name ||
                                           "Selecione a disciplina"
                                         }
                                       />
@@ -351,7 +354,8 @@ export default function CreateExamPage() {
                                     <SelectTrigger>
                                       <SelectValue
                                         placeholder={
-                                          field.value || "Selecione a turma"
+                                          exam?.classroom.name ||
+                                          "Selecione a turma"
                                         }
                                       />
                                     </SelectTrigger>
@@ -438,7 +442,7 @@ export default function CreateExamPage() {
                     <Card
                       key={question.id}
                       className={`relative ${
-                        question.was_generated_by_ai ? "border-green-500" : ""
+                        question.not_attached ? "border-green-500" : ""
                       }`}
                     >
                       <CardContent className="pt-6">
@@ -490,13 +494,25 @@ export default function CreateExamPage() {
                         </div>
                         {renderQuestionEditor(question)}
                         <div className="flex justify-end">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleUpdateQuestion(question)}
-                            disabled={!form.formState.isValid}
-                          >
-                            Salvar Questão
-                          </Button>
+                          {question.was_generated_by_ai ? (
+                            <Button
+                              variant="default"
+                              onClick={() =>
+                                handleAddQuestionToExam(question.id!)
+                              }
+                              disabled={!form.formState.isValid}
+                            >
+                              Anexar à prova
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              onClick={() => handleUpdateQuestion(question)}
+                              disabled={!form.formState.isValid}
+                            >
+                              Salvar Questão
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
