@@ -149,14 +149,8 @@ export default function CreateExamPage() {
     return questionComponent[question.type as QuestionType] || null;
   };
 
-  const { data: disciplines } = useSWR(
-    `/disciplines/?user=${session?.id}`,
-    fetcher
-  );
-  const { data: classrooms } = useSWR(
-    `/classrooms/?user=${session?.id}`,
-    fetcher
-  );
+  const { data: disciplines } = useSWR(`/disciplines/`, fetcher);
+  const { data: classrooms } = useSWR(`/classrooms/`, fetcher);
 
   const onSubmit = async (data: ExamFormValues) => {
     try {

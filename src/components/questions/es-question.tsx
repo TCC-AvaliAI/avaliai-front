@@ -33,7 +33,7 @@ export function ESQuestion({
         <Textarea
           id={`question-${question.id}-answer`}
           placeholder="Digite a resposta esperada aqui..."
-          value={question.answer_text}
+          value={question.answer_text || ""}
           onChange={(e) =>
             setQuestions(
               questions.map((q) =>

@@ -61,7 +61,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
         },
       ]);
       const reponse = await api.post("/messages/", {
-        content: messageContent,
+        content: `Answer directly and briefly and in Portuguese: ${messageContent}`,
       });
       const { assistant_message } = reponse.data as ResponseMessage;
       setMessages((prev) => [...prev, assistant_message]);
