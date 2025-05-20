@@ -86,6 +86,8 @@ const Header = ({ message, setMessage }: HeaderProps) => {
           variant={message.variant}
           message={message.message}
           onDismiss={() => setMessage({ ...message, message: "" })}
+          idToRedirect={message.idToRedirect}
+          redirectText={message.redirectText}
         />
       )}
     </>

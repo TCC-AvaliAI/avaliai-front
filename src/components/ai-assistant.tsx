@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Minimize2, BotMessageSquare, Loader2, X } from "lucide-react";
+import {
+  Send,
+  BotMessageSquare,
+  Loader2,
+  X,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -28,7 +34,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
     },
   ]);
   const [input, setInput] = useState("");
-  const [isMinimized, setIsMinimized] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -126,7 +132,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
             onClick={handleClearChat}
             title="Limpar conversa"
           >
-            <X className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
@@ -134,7 +140,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
             className="h-7 w-7"
             onClick={() => setIsMinimized(true)}
           >
-            <Minimize2 className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
       </div>

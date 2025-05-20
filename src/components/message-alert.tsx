@@ -1,8 +1,16 @@
 "use client";
 
 import React from "react";
-import { CheckCircle, XCircle, AlertTriangle, X } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  X,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export type MessageVariant = "success" | "error" | "warning";
 
@@ -10,18 +18,20 @@ export interface MessageAlertProps {
   variant: MessageVariant;
   title?: string;
   message: string;
-  dismissible?: boolean;
   onDismiss?: () => void;
+  idToRedirect?: string;
+  redirectText?: string;
   className?: string;
 }
 
 export function MessageAlert({
-  variant = "success",
+  variant,
   title,
   message,
-  dismissible = true,
   onDismiss,
   className,
+  idToRedirect,
+  redirectText,
 }: MessageAlertProps) {
   const [isVisible, setIsVisible] = React.useState(true);
 
@@ -53,7 +63,7 @@ export function MessageAlert({
   };
 
   const styles = variantStyles[variant];
-
+  console.log("aquii", idToRedirect);
   return (
     <div
       className={cn(
@@ -68,16 +78,31 @@ export function MessageAlert({
         {title && <p className={cn("font-semibold", styles.title)}>{title}</p>}
         <p className="text-sm mt-1">{message}</p>
       </div>
-      {dismissible && (
-        <button
-          type="button"
-          className="flex-shrink-0 ml-3 -mt-1 -mr-1 p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-gray-400 hover:cursor-pointer"
+      <div className="flex items-center gap-2">
+        {idToRedirect && redirectText && (
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="hover:bg-transparent p-0"
+          >
+            <Link href={`/exams/${idToRedirect}`} className="flex items-center">
+              <SquareArrowOutUpRight className="h-4 w-4" />
+              <span className="text-sm mr-1">{redirectText}</span>
+            </Link>
+          </Button>
+        )}
+
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleDismiss}
           aria-label="Fechar"
+          className="hover:bg-transparent p-0"
         >
           <X className="h-4 w-4 text-gray-500" />
-        </button>
-      )}
+        </Button>
+      </div>
     </div>
   );
 }

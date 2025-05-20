@@ -40,6 +40,7 @@ import { MCQuestion } from "@/components/questions/mc-question";
 import { TFQuestion } from "@/components/questions/tf-question";
 import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
+import { Exam } from "@/@types/ExamProps";
 
 type DisciplineProps = {
   id: string;
@@ -91,9 +92,6 @@ export default function CreateExamPage() {
     },
   });
 
-  const [suggestedQuestion, setSuggestedQuestion] = useState<
-    Partial<QuestionProps>
-  >({});
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
     variant: "success",
@@ -152,9 +150,13 @@ export default function CreateExamPage() {
       const response = await api.post("/exams/ai/", {
         ...data,
       });
+      const exam = response.data;
+
       setMessageAlert({
-        message: "Prova gerada com sucesso!",
+        message: "Prova gerada com sucesso! Clique no ícone para visualizá-la",
         variant: "success",
+        idToRedirect: exam.id,
+        redirectText: "Ver Prova",
       });
     } catch (error) {
       setMessageAlert({
@@ -189,9 +191,13 @@ export default function CreateExamPage() {
       };
 
       const response = await api.post("/exams/", payload);
+      const exam = response.data;
+      console.log(exam.id);
       setMessageAlert({
-        message: "Prova gerada com sucesso!",
+        message: "Prova gerada com sucesso! Clique no ícone para visualizá-la",
         variant: "success",
+        idToRedirect: exam.id,
+        redirectText: "Ver Prova",
       });
     } catch (error) {
       setMessageAlert({
