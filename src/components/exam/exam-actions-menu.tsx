@@ -34,6 +34,12 @@ export function ExamActionsMenu({ examId }: ExamActionsMenuProps) {
     } catch (error) {}
   }
 
+  async function handleDelete() {
+    try {
+      await api.delete(`/exams/${examId}`);
+    } catch (error) {}
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -53,6 +59,8 @@ export function ExamActionsMenu({ examId }: ExamActionsMenuProps) {
         <DropdownMenuItem onClick={handleMarkAsApplied}>
           Marcar como aplicado
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDelete}>Deletar</DropdownMenuItem>
         <DropdownMenuSeparator />
       </DropdownMenuContent>
     </DropdownMenu>
