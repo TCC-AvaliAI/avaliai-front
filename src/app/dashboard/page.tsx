@@ -204,47 +204,58 @@ export default function DashboardPage() {
           </TabsList>
           <TabsContent value="recent" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {examsDetails?.recent_exams.map((exam, index) => (
-                <Card key={index}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div>
-                      <CardTitle className="text-lg">{exam.title}</CardTitle>
-                      <CardDescription>
-                        Criada em:{" "}
-                        {new Date(exam.created_at).toLocaleDateString("pt-BR", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                        })}
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      title={
-                        exam.was_generated_by_ai
-                          ? "Criada por IA"
-                          : "Criada por você"
-                      }
-                      className="hover:cursor-help"
-                    >
-                      {exam.was_generated_by_ai ? "IA" : "Você"}
-                    </Badge>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between text-sm">
-                      <span>Status: {exam.status}</span>
-                      <span>Dificuldade: {exam.difficulty}</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Link href={`/exams/${exam.id}`} className="w-full">
-                      <Button variant="outline" className="w-full">
-                        Ver detalhes
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
+              {examsDetails?.recent_exams.length ? (
+                examsDetails?.recent_exams.map((exam, index) => (
+                  <Card key={index}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div>
+                        <CardTitle className="text-lg">{exam.title}</CardTitle>
+                        <CardDescription>
+                          Criada em:{" "}
+                          {new Date(exam.created_at).toLocaleDateString(
+                            "pt-BR",
+                            {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                            }
+                          )}
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        title={
+                          exam.was_generated_by_ai
+                            ? "Criada por IA"
+                            : "Criada por você"
+                        }
+                        className="hover:cursor-help"
+                      >
+                        {exam.was_generated_by_ai ? "IA" : "Você"}
+                      </Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between text-sm">
+                        <span>Status: {exam.status}</span>
+                        <span>Dificuldade: {exam.difficulty}</span>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Link href={`/exams/${exam.id}`} className="w-full">
+                        <Button variant="outline" className="w-full">
+                          Ver detalhes
+                        </Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-3 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma prova recente encontrada.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
           <TabsContent value="upcoming" className="space-y-4">
