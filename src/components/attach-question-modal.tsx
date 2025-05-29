@@ -1,0 +1,95 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Exam } from "@/@types/ExamProps";
+import { QuestionProps } from "@/@types/QuestionProps";
+import api from "@/lib/axios";
+
+interface AttachQuestionModalProps {
+  question: QuestionProps;
+  exams: Exam[];
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export function AttachQuestionModal({
+  question,
+  exams,
+  isOpen,
+  onClose,
+  onSuccess,
+}: AttachQuestionModalProps) {
+  const [selectedExam, setSelectedExam] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAttachQuestion = async () => {
+    if (!selectedExam) return;
+    setIsLoading(true);
+    try {
+      await api.post(`/exams/${selectedExam}/questions/`, {
+        question_id: question.id,
+      });
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Erro ao anexar questão:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Anexar Questão à Prova</DialogTitle>
+          <DialogDescription>
+            Selecione a prova para anexar esta questão
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <Select value={selectedExam} onValueChange={setSelectedExam}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma prova" />
+            </SelectTrigger>
+            <SelectContent>
+              {exams.map((exam) => (
+                <SelectItem key={exam.id} value={exam.id}>
+                  {exam.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleAttachQuestion}
+            disabled={!selectedExam || isLoading}
+          >
+            {isLoading ? "Anexando..." : "Confirmar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

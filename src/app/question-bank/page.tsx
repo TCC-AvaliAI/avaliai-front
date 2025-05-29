@@ -24,15 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  FileText,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  ChevronRight,
-  ChevronLeft,
-} from "lucide-react";
+import { PlusCircle, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps } from "@/@types/QuestionProps";
 import useSWR from "swr";
@@ -49,6 +41,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Exam } from "@/@types/ExamProps";
+import { AttachQuestionModal } from "@/components/attach-question-modal";
 
 interface QuestionsPageProps {
   count: number;
@@ -64,12 +58,18 @@ export default function QuestionBankPage() {
     message: "",
     variant: "success",
   });
+  const [selectedQuestion, setSelectedQuestion] =
+    useState<QuestionProps | null>(null);
+  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const questionType = {
     MC: "Múltipla Escolha",
     TF: "Verdadeiro ou Falso",
     ES: "Discursiva",
   };
-
+  const { data: exams = [], isLoading: isLoadingExams } = useSWR<Exam[]>(
+    `/exams/`,
+    fetcher
+  );
   const { data: questions, isLoading } = useSWR<QuestionsPageProps>(
     `/questions/?page=${currentPage}`,
     fetcher
@@ -92,6 +92,18 @@ export default function QuestionBankPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleOpenAttachModal = (question: QuestionProps) => {
+    setSelectedQuestion(question);
+    setIsAttachModalOpen(true);
+  };
+
+  const handleAttachSuccess = () => {
+    setMessageAlert({
+      message: "Questão anexada com sucesso!",
+      variant: "success",
+    });
   };
 
   return (
@@ -157,14 +169,22 @@ export default function QuestionBankPage() {
                         : question.options?.[question.answer] || "N/A"}
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
-                      <Button
-                        variant="destructive"
-                        onClick={() =>
-                          handleDeleteQuestion(question.id as string)
-                        }
-                      >
-                        <Trash2 />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="destructive"
+                          onClick={() =>
+                            handleDeleteQuestion(question.id as string)
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenAttachModal(question)}
+                        >
+                          <PlusCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -194,6 +214,18 @@ export default function QuestionBankPage() {
           </div>
         )}
       </main>
+      {selectedQuestion && (
+        <AttachQuestionModal
+          question={selectedQuestion}
+          exams={exams}
+          isOpen={isAttachModalOpen}
+          onClose={() => {
+            setIsAttachModalOpen(false);
+            setSelectedQuestion(null);
+          }}
+          onSuccess={handleAttachSuccess}
+        />
+      )}
     </div>
   );
 }
