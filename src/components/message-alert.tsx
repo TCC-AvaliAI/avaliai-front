@@ -63,7 +63,6 @@ export function MessageAlert({
   };
 
   const styles = variantStyles[variant];
-  console.log("aquii", idToRedirect);
   return (
     <div
       className={cn(

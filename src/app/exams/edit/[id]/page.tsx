@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
+import { Plus, Trash2, GripVertical, Copy, Sparkles, Key } from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
 import { Exam } from "@/@types/ExamProps";
@@ -31,7 +31,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
 import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
 import { useParams } from "next/navigation";
@@ -41,7 +40,6 @@ import { TFQuestion } from "@/components/questions/tf-question";
 import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
 import { Badge } from "@/components/ui/badge";
-import { set } from "date-fns";
 
 type DisciplineProps = {
   id: string;
@@ -61,6 +59,8 @@ const examFormSchema = z.object({
   theme: z.string().min(1, "O tema é obrigatório"),
   discipline: z.string().min(1, "Selecione uma disciplina"),
   classroom: z.string().min(1, "Selecione uma turma"),
+  apiKey: z.string().default(""),
+  model: z.string().min(1, "Selecione um modelo de IA"),
 });
 
 type ExamFormValues = z.infer<typeof examFormSchema>;
@@ -91,8 +91,10 @@ export default function CreateExamPage() {
       title: exam?.title || "",
       description: exam?.description || "",
       theme: exam?.theme || "",
-      discipline: exam?.discipline.id || "",
-      classroom: exam?.classroom.id || "",
+      discipline: exam?.discipline?.id || "",
+      classroom: exam?.classroom?.id || "",
+      apiKey: "",
+      model: "default",
     },
   });
 
@@ -109,6 +111,8 @@ export default function CreateExamPage() {
         theme: exam.theme || "",
         discipline: exam.discipline.id || "",
         classroom: exam.classroom.id || "",
+        apiKey: "",
+        model: "",
       });
     }
   }, [exam, form]);
@@ -170,12 +174,16 @@ export default function CreateExamPage() {
         variant: "error",
       });
     setIsLoading(true);
+    const payload = {
+      description: `Crie UMA questão para a prova ${data.title} com o tema ${data.theme}`,
+      model: data.model,
+      api_key: data.apiKey,
+    };
     try {
       const response = await api.post("/questions/ai/", {
-        description: `Crie UMA questão para a prova ${data.title} com o tema ${data.theme}`,
+        ...payload,
       });
       const questionByAi = response.data;
-      console.log("questionByAi", questionByAi);
       const newQuestions = [
         {
           ...questionByAi,
@@ -396,22 +404,88 @@ export default function CreateExamPage() {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }: any) => (
-                            <FormItem>
-                              <FormLabel>Descrição/Instruções</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Instruções para os alunos..."
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div className="flex items-center justify-between">
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem className="mt-4">
+                                <FormLabel>Descrição/Instruções</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    className="w-[600px]"
+                                    placeholder="Instruções para a IA..."
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="model"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  <Sparkles className="h-4 w-4" />
+                                  Modelo de IA
+                                </FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o tema" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="default">
+                                      Gemini (limitado)
+                                    </SelectItem>
+                                    <SelectItem value="gpt">
+                                      Chatgpt 4o
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        {form.watch("model") === "gpt" && (
+                          <div className="space-y-2">
+                            <FormField
+                              control={form.control}
+                              name="apiKey"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel
+                                    htmlFor="apiKey"
+                                    className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                                  >
+                                    <Key className="h-4 w-4" />
+                                    API Key
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="password"
+                                      placeholder="sk-..."
+                                      className="font-mono text-sm"
+                                    />
+                                  </FormControl>
+                                  <p className="text-xs text-gray-500">
+                                    Sua API key é necessária para usar o modelo
+                                    e ela não será salva por nosso sistema.
+                                  </p>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
 
                         <div className="flex justify-start gap-4">
                           <Button
@@ -422,6 +496,7 @@ export default function CreateExamPage() {
                             )}
                             disabled={!form.formState.isValid}
                           >
+                            <Sparkles className="w-4 h-4 mr-2" />
                             Gerar questão com IA
                           </Button>
                           <Button
@@ -494,13 +569,12 @@ export default function CreateExamPage() {
                         </div>
                         {renderQuestionEditor(question)}
                         <div className="flex justify-end">
-                          {question.was_generated_by_ai ? (
+                          {question.not_attached ? (
                             <Button
                               variant="default"
                               onClick={() =>
                                 handleAddQuestionToExam(question.id!)
                               }
-                              disabled={!form.formState.isValid}
                             >
                               Anexar à prova
                             </Button>
@@ -508,7 +582,6 @@ export default function CreateExamPage() {
                             <Button
                               variant="outline"
                               onClick={() => handleUpdateQuestion(question)}
-                              disabled={!form.formState.isValid}
                             >
                               Salvar Questão
                             </Button>

@@ -14,7 +14,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  GripVertical,
+  Copy,
+  Sparkles,
+  Target,
+  Users,
+  BookOpen,
+  FileText,
+  Hash,
+  Key,
+} from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
 import useSWR from "swr";
@@ -41,6 +53,8 @@ import { TFQuestion } from "@/components/questions/tf-question";
 import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
 import { Exam } from "@/@types/ExamProps";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 
 type DisciplineProps = {
   id: string;
@@ -60,14 +74,19 @@ const examFormSchema = z.object({
   theme: z.string().min(1, "O tema é obrigatório"),
   discipline: z.string().min(1, "Selecione uma disciplina"),
   classroom: z.string().min(1, "Selecione uma turma"),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"], {
+    required_error: "Selecione a dificuldade",
+  }),
+  amountQuestions: z.enum(["5", "10", "15"], {
+    required_error: "Selecione a quantidade de questões",
+  }),
+  apiKey: z.string().default(""),
+  model: z.string().min(1, "Selecione um modelo de IA"),
 });
 
 type ExamFormValues = z.infer<typeof examFormSchema>;
 
 export default function CreateExamPage() {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const {
     questions,
@@ -89,6 +108,10 @@ export default function CreateExamPage() {
       theme: "",
       discipline: "",
       classroom: "",
+      difficulty: "MEDIUM",
+      amountQuestions: "5",
+      model: "default",
+      apiKey: "",
     },
   });
 
@@ -130,39 +153,42 @@ export default function CreateExamPage() {
   const { data: classrooms } = useSWR(`/classrooms/`, fetcher);
 
   const onSubmit = async (data: ExamFormValues) => {
-    try {
-      toast({
-        title: "Sucesso!",
-        description: "Formulário validado com sucesso.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro!",
-        description: "Ocorreu um erro ao processar o formulário.",
-        variant: "destructive",
-      });
-    }
+    return data;
   };
 
   async function handleGenerateExamByAI(data: ExamFormValues) {
     setIsLoading(true);
     try {
-      const response = await api.post("/exams/ai/", {
+      const enhancedDescription = `
+        Gere uma prova com as seguintes características:
+        - Quantidade de questões: ${data.amountQuestions}
+        - Nível de dificuldade: ${data.difficulty}
+        Instruções adicionais: ${data.description}
+      `.trim();
+      const payload = {
         ...data,
-      });
+        description: enhancedDescription,
+        model: data.model,
+        api_key: data.apiKey,
+      };
+      const response = await api.post("/exams/ai/", { ...payload, questions });
       const exam = response.data;
-
-      setMessageAlert({
-        message: "Prova gerada com sucesso! Clique no ícone para visualizá-la",
-        variant: "success",
-        idToRedirect: exam.id,
-        redirectText: "Ver Prova",
-      });
+      setTimeout(() => {
+        setMessageAlert({
+          message:
+            "Prova gerada com sucesso! Clique no ícone para visualizá-la",
+          variant: "success",
+          idToRedirect: exam.id,
+          redirectText: "Ver Prova",
+        });
+      }, 100);
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao gerar a prova com IA.",
-        variant: "error",
-      });
+      setTimeout(() => {
+        setMessageAlert({
+          message: "Erro ao gerar a prova com IA.",
+          variant: "error",
+        });
+      }, 100);
     } finally {
       setIsLoading(false);
     }
@@ -192,28 +218,31 @@ export default function CreateExamPage() {
 
       const response = await api.post("/exams/", payload);
       const exam = response.data;
-      console.log(exam.id);
-      setMessageAlert({
-        message: "Prova gerada com sucesso! Clique no ícone para visualizá-la",
-        variant: "success",
-        idToRedirect: exam.id,
-        redirectText: "Ver Prova",
-      });
+      setTimeout(() => {
+        setMessageAlert({
+          message:
+            "Prova gerada com sucesso! Clique no ícone para visualizá-la",
+          variant: "success",
+          idToRedirect: exam.id,
+          redirectText: "Ver Prova",
+        });
+      }, 100);
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao gerar a prova.",
-        variant: "error",
-      });
+      setTimeout(() => {
+        setMessageAlert({
+          message: "Erro ao gerar a prova.",
+          variant: "error",
+        });
+      }, 100);
     } finally {
       setIsLoading(false);
     }
   }
-
   return (
     <>
+      {isLoading && <Loading showText={isLoading} />}
       <div className="flex min-h-screen flex-col">
         <Header message={messageAlert} setMessage={setMessageAlert} />
-        {isLoading && <Loading />}
         <main className="flex-1 container py-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -227,6 +256,11 @@ export default function CreateExamPage() {
                   <Card>
                     <CardContent className="pt-6">
                       <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground">
+                          <FileText className="w-5 h-5" />
+                          Informações Básicas
+                        </div>
+
                         <FormField
                           control={form.control}
                           name="title"
@@ -250,7 +284,10 @@ export default function CreateExamPage() {
                             name="discipline"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Disciplina</FormLabel>
+                                <FormLabel>
+                                  <BookOpen className="w-4 h-4" />
+                                  Disciplina
+                                </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
@@ -283,7 +320,10 @@ export default function CreateExamPage() {
                             name="classroom"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Série/Turma</FormLabel>
+                                <FormLabel>
+                                  <Users className="w-4 h-4" />
+                                  Série/Turma
+                                </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
@@ -316,11 +356,14 @@ export default function CreateExamPage() {
                           control={form.control}
                           name="theme"
                           render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Tema</FormLabel>
+                            <FormItem className="w-full">
+                              <FormLabel>
+                                <Target className="w-4 h-4 inline-block" />
+                                Tema
+                              </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Escreva aqui o tema da prova..."
+                                  placeholder="Ex: prova de teoremas de álgebra"
                                   {...field}
                                 />
                               </FormControl>
@@ -329,42 +372,178 @@ export default function CreateExamPage() {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Descrição/Instruções</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Instruções para os alunos..."
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <Separator />
+
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground">
+                            <Hash className="w-5 h-5" />
+                            Configurações da Prova
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <FormField
+                              control={form.control}
+                              name="amountQuestions"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Quantidade de questões</FormLabel>
+                                  <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="5" id="q5" />
+                                      <Label htmlFor="q5">5 questões</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="10" id="q10" />
+                                      <Label htmlFor="q10">10 questões</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="15" id="q15" />
+                                      <Label htmlFor="q15">15 questões</Label>
+                                    </div>
+                                  </RadioGroup>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="difficulty"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Dificuldade</FormLabel>
+                                  <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="EASY" id="d1" />
+                                      <Label htmlFor="d1">Fácil</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="MEDIUM" id="d2" />
+                                      <Label htmlFor="d2">Média</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="HARD" id="d3" />
+                                      <Label htmlFor="d3">Difícil</Label>
+                                    </div>
+                                  </RadioGroup>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem className="mt-4">
+                                <FormLabel>Descrição/Instruções</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    className="w-[600px]"
+                                    placeholder="Instruções para a IA..."
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="model"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  <Sparkles className="h-4 w-4" />
+                                  Modelo de IA
+                                </FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o tema" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="default">
+                                      Gemini (limitado)
+                                    </SelectItem>
+                                    <SelectItem value="gpt">
+                                      Chatgpt 4o
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        {form.watch("model") === "gpt" && (
+                          <div className="space-y-2">
+                            <FormField
+                              control={form.control}
+                              name="apiKey"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel
+                                    htmlFor="apiKey"
+                                    className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                                  >
+                                    <Key className="h-4 w-4" />
+                                    API Key
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="password"
+                                      placeholder="sk-..."
+                                      className="font-mono text-sm"
+                                    />
+                                  </FormControl>
+                                  <p className="text-xs text-gray-500">
+                                    Sua API key é necessária para usar o modelo
+                                    e ela não será salva por nosso sistema.
+                                  </p>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
 
                         <div className="flex justify-start gap-4">
                           <Button
                             type="button"
-                            variant="secondary"
-                            onClick={form.handleSubmit((data) =>
-                              handleGenerateExamByAI(data)
-                            )}
-                            disabled={!form.formState.isValid}
+                            variant="default"
+                            onClick={form.handleSubmit(handleGenerateExamByAI)}
+                            disabled={!form.formState.isValid || isLoading}
                           >
-                            Gerar prova com IA
+                            {isLoading ? (
+                              "Gerando..."
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Gerar prova com IA
+                              </>
+                            )}
                           </Button>
                           <Button
-                            type="submit"
-                            disabled={!form.formState.isValid}
-                            onClick={form.handleSubmit((data) =>
-                              handleGenerateExam(data)
-                            )}
+                            type="button"
+                            variant="secondary"
+                            onClick={form.handleSubmit(handleGenerateExam)}
+                            disabled={!form.formState.isValid || isLoading}
                           >
-                            Salvar Prova
+                            {isLoading ? "Salvando..." : "Salvar Prova"}
                           </Button>
                         </div>
                       </div>

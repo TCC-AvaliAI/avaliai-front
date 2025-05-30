@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import {
-  Send,
-  BotMessageSquare,
-  Loader2,
-  X,
-  Trash2,
-} from "lucide-react";
+import { Send, BotMessageSquare, Loader2, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -34,7 +28,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
     },
   ]);
   const [input, setInput] = useState("");
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,6 +62,7 @@ export function AIAssistant({ className }: AIAssistantProps) {
       ]);
       const reponse = await api.post("/messages/", {
         content: `Answer directly and briefly and in Portuguese: ${messageContent}`,
+        model: "default",
       });
       const { assistant_message } = reponse.data as ResponseMessage;
       setMessages((prev) => [...prev, assistant_message]);
