@@ -160,11 +160,7 @@ export default function CreateExamPage() {
     setIsLoading(true);
     try {
       const enhancedDescription = `
-        Gere uma prova com as seguintes características:
-        - Quantidade de questões: ${data.amountQuestions}
-        - Nível de dificuldade: ${data.difficulty}
-        Instruções adicionais: ${data.description}
-      `.trim();
+        Deve conter as seguintes características: ${data.amountQuestions} e ${data.description}`.trim();
       const payload = {
         ...data,
         description: enhancedDescription,
@@ -464,7 +460,7 @@ export default function CreateExamPage() {
                               <FormItem>
                                 <FormLabel>
                                   <Sparkles className="h-4 w-4" />
-                                  Modelo de IA
+                                  Escolher modelo de IA
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}

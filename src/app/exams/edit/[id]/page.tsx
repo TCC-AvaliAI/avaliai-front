@@ -14,7 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, GripVertical, Copy, Sparkles, Key } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  GripVertical,
+  Copy,
+  Sparkles,
+  Key,
+  Target,
+  Users,
+  BookOpen,
+} from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
 import { Exam } from "@/@types/ExamProps";
@@ -321,7 +331,10 @@ export default function CreateExamPage() {
                             name="discipline"
                             render={({ field }: any) => (
                               <FormItem>
-                                <FormLabel>Disciplina</FormLabel>
+                                <FormLabel>
+                                  <BookOpen className="w-4 h-4" />
+                                  Disciplina
+                                </FormLabel>
                                 <Select onValueChange={field.onChange}>
                                   <FormControl>
                                     <SelectTrigger>
@@ -356,7 +369,10 @@ export default function CreateExamPage() {
                             name="classroom"
                             render={({ field }: any) => (
                               <FormItem>
-                                <FormLabel>Série/Turma</FormLabel>
+                                <FormLabel>
+                                  <Users className="w-4 h-4" />
+                                  Série/Turma
+                                </FormLabel>
                                 <Select onValueChange={field.onChange}>
                                   <FormControl>
                                     <SelectTrigger>
@@ -392,7 +408,10 @@ export default function CreateExamPage() {
                           name="theme"
                           render={({ field }: any) => (
                             <FormItem>
-                              <FormLabel>Tema</FormLabel>
+                              <FormLabel>
+                                <Target className="w-4 h-4 inline-block" />
+                                Tema
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   placeholder="Escreva aqui o tema da prova..."
@@ -430,7 +449,7 @@ export default function CreateExamPage() {
                               <FormItem>
                                 <FormLabel>
                                   <Sparkles className="h-4 w-4" />
-                                  Modelo de IA
+                                  Escolher modelo de IA
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -580,6 +599,7 @@ export default function CreateExamPage() {
                             </Button>
                           ) : (
                             <Button
+                              className="mt-4"
                               variant="outline"
                               onClick={() => handleUpdateQuestion(question)}
                             >

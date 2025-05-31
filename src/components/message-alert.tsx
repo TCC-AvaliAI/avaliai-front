@@ -85,7 +85,7 @@ export function MessageAlert({
             asChild
             className="hover:bg-transparent p-0"
           >
-            <Link href={`/exams/${idToRedirect}`} className="flex items-center">
+            <Link href={`/exams/edit/${idToRedirect}`} className="flex items-center">
               <SquareArrowOutUpRight className="h-4 w-4" />
               <span className="text-sm mr-1">{redirectText}</span>
             </Link>
