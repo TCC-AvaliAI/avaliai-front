@@ -2,6 +2,7 @@ import { QuestionProps } from "@/@types/QuestionProps";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Textarea } from "../ui/textarea";
+import { SearchTag } from "../search-tag";
 
 interface TFQuestionProps {
   question: QuestionProps;
@@ -17,6 +18,7 @@ export function TFQuestion({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
+        <SearchTag questionId={question.id} questionTags={question.tags} />
         <Label htmlFor={`question-${question.id}-text`}>Afirmação</Label>
         <Textarea
           id={`question-${question.id}-text`}

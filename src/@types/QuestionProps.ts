@@ -1,5 +1,5 @@
 export interface QuestionProps {
-  id?: string;
+  id: string;
   title: string;
   options: string[];
   answer: number;
@@ -10,6 +10,10 @@ export interface QuestionProps {
   created_at: string;
   was_generated_by_ai: boolean;
   not_attached?: boolean;
+  tags: {
+    id: string;
+    name: string;
+  }[];
 }
 
 export type QuestionType = "MC" | "TF" | "ES";

@@ -1,6 +1,7 @@
 import { QuestionProps } from "@/@types/QuestionProps";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import { SearchTag } from "../search-tag";
 
 interface ESQuestionProps {
   question: QuestionProps;
@@ -18,6 +19,7 @@ export function ESQuestion({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
+        <SearchTag questionId={question.id} questionTags={question.tags}/>
         <Label htmlFor={`question-${question.id}-text`}>Pergunta</Label>
         <Textarea
           id={`question-${question.id}-text`}
