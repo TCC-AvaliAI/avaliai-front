@@ -534,12 +534,12 @@ export default function CreateExamPage() {
                             )}
                           </Button>
                           <Button
-                            type="button"
+                            type="submit"
                             variant="secondary"
                             onClick={form.handleSubmit(handleGenerateExam)}
                             disabled={!form.formState.isValid || isLoading}
                           >
-                            {isLoading ? "Salvando..." : "Salvar Prova"}
+                            Salvar Prova
                           </Button>
                         </div>
                       </div>

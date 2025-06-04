@@ -74,7 +74,6 @@ export function SearchTag({ questionId, questionTags }: SearchTagProps) {
       if (!tag) return;
       if (tags.some((existingTag) => existingTag.id === id)) return;
       const payload = [id];
-      console.log("payload", payload);
       await api.post(`/questions/${questionId}/tags/`, {
         tags: payload,
       });
