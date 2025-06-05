@@ -160,7 +160,7 @@ export default function CreateExamPage() {
     setIsLoading(true);
     try {
       const enhancedDescription = `
-        Deve conter as seguintes características: ${data.amountQuestions} e ${data.description}`.trim();
+        Deve conter as seguintes características: ${data.amountQuestions} é quantidade de questões e ${data.description}`.trim();
       const payload = {
         ...data,
         description: enhancedDescription,
@@ -473,7 +473,10 @@ export default function CreateExamPage() {
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="default">
-                                      Gemini (limitado)
+                                      Gemini (Gratuito)
+                                    </SelectItem>
+                                    <SelectItem value="groq">
+                                      Groq (Gratuito)
                                     </SelectItem>
                                     <SelectItem value="gpt">
                                       Chatgpt 4o

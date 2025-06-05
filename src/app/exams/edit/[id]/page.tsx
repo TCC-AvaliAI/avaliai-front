@@ -462,7 +462,10 @@ export default function CreateExamPage() {
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="default">
-                                      Gemini (limitado)
+                                      Gemini (Grátis)
+                                    </SelectItem>
+                                    <SelectItem value="groq">
+                                      Groq (Grátis)
                                     </SelectItem>
                                     <SelectItem value="gpt">
                                       Chatgpt 4o
