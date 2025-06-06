@@ -10,6 +10,7 @@ export interface QuestionProps {
   created_at: string;
   was_generated_by_ai: boolean;
   not_attached?: boolean;
+  author_name: string;
   tags: {
     id: string;
     name: string;

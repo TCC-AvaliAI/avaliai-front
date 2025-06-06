@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/table";
 import { Exam } from "@/@types/ExamProps";
 import { AttachQuestionModal } from "@/components/attach-question-modal";
+import { Badge } from "@/components/ui/badge";
 
 interface QuestionsPageProps {
   count: number;
@@ -52,7 +53,6 @@ interface QuestionsPageProps {
 }
 
 export default function QuestionBankPage() {
-  const { data: session } = useSession();
   const [currentPage, setCurrentPage] = useState(1);
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
@@ -106,6 +106,13 @@ export default function QuestionBankPage() {
     });
   };
 
+  const handleAttachError = () => {
+    setMessageAlert({
+      message: "Erro ao anexar questão.",
+      variant: "error",
+    });
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header message={messageAlert} setMessage={setMessageAlert} />
@@ -122,6 +129,9 @@ export default function QuestionBankPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                    Autor
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal text-base">
                     Título
                   </TableHead>
                   <TableHead className="max-w-xs break-words whitespace-normal text-base">
@@ -137,6 +147,9 @@ export default function QuestionBankPage() {
                     Resposta Correta
                   </TableHead>
                   <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                    Tags
+                  </TableHead>
+                  <TableHead className="max-w-xs break-words whitespace-normal text-base">
                     Ação
                   </TableHead>
                 </TableRow>
@@ -144,6 +157,9 @@ export default function QuestionBankPage() {
               <TableBody>
                 {questions.results.map((question) => (
                   <TableRow key={question.id}>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      {question.author_name}
+                    </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       {question.title}
                     </TableCell>
@@ -167,6 +183,17 @@ export default function QuestionBankPage() {
                       {question.type === "ES"
                         ? question.answer_text || "N/A"
                         : question.options?.[question.answer] || "N/A"}
+                    </TableCell>
+                    <TableCell className="max-w-xs break-words whitespace-normal">
+                      <div className="flex flex-col gap-1">
+                        {question.tags.length > 0
+                          ? question.tags.map((tag) => (
+                              <Badge variant="secondary" key={tag.name}>
+                                {tag.name}
+                              </Badge>
+                            ))
+                          : "N/A"}
+                      </div>
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       <div className="flex gap-2">
@@ -223,6 +250,7 @@ export default function QuestionBankPage() {
             setIsAttachModalOpen(false);
             setSelectedQuestion(null);
           }}
+          onError={handleAttachError}
           onSuccess={handleAttachSuccess}
         />
       )}

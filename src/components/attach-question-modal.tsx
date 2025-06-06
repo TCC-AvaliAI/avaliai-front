@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +20,8 @@ import {
 import { Exam } from "@/@types/ExamProps";
 import { QuestionProps } from "@/@types/QuestionProps";
 import api from "@/lib/axios";
+import { MessageAlertProps } from "./message-alert";
+import { on } from "events";
 
 interface AttachQuestionModalProps {
   question: QuestionProps;
@@ -27,6 +29,7 @@ interface AttachQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onError: () => void;
 }
 
 export function AttachQuestionModal({
@@ -35,6 +38,7 @@ export function AttachQuestionModal({
   isOpen,
   onClose,
   onSuccess,
+  onError,
 }: AttachQuestionModalProps) {
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +53,8 @@ export function AttachQuestionModal({
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Erro ao anexar questão:", error);
+      onError();
+      onClose();
     } finally {
       setIsLoading(false);
     }
@@ -66,10 +71,10 @@ export function AttachQuestionModal({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Select value={selectedExam} onValueChange={setSelectedExam}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione uma prova" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
               {exams.map((exam) => (
                 <SelectItem key={exam.id} value={exam.id}>
                   {exam.title}
