@@ -1,38 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
+  PlusCircle,
+  Trash2,
+  ChevronRight,
+  ChevronLeft,
+  Search,
+} from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps } from "@/@types/QuestionProps";
 import useSWR from "swr";
 import { Loading } from "@/components/loading/page";
 import { fetcher } from "@/lib/fetcher";
-import { useSession } from "next-auth/react";
 import api from "@/lib/axios";
-import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
+import { MessageAlertProps } from "@/components/message-alert";
 import {
   Table,
   TableBody,
@@ -53,6 +37,7 @@ interface QuestionsPageProps {
 }
 
 export default function QuestionBankPage() {
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
@@ -70,10 +55,23 @@ export default function QuestionBankPage() {
     `/exams/`,
     fetcher
   );
-  const { data: questions, isLoading } = useSWR<QuestionsPageProps>(
-    `/questions/?page=${currentPage}`,
-    fetcher
-  );
+
+  const {
+    data: questions,
+    isLoading,
+    mutate,
+  } = useSWR<QuestionsPageProps>(`/questions/?page=${currentPage}`, fetcher);
+
+  const handleSearch = async () => {
+    const response = await api.get(`/questions/`, {
+      params: {
+        search: searchTerm,
+        page: currentPage,
+      },
+    });
+    const searchResults = response.data as QuestionsPageProps;
+    mutate(searchResults, false);
+  };
 
   const handleDeleteQuestion = async (id: string | undefined) => {
     try {
@@ -119,11 +117,25 @@ export default function QuestionBankPage() {
       <main className="flex-1 container py-6">
         {isLoading && <Loading />}
         {questions && questions.results ? (
-          <div className="flex flex-col gap-8">
-            <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-10">
+            <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold tracking-tight">
                 Banco de Questões
               </h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por título, autor, resposta ou tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full max-w-md"
+                />
+              </div>
+              <Button variant="outline" onClick={handleSearch}>Buscar</Button>
             </div>
             <Table className="overflow-hidden">
               <TableHeader>
@@ -186,13 +198,15 @@ export default function QuestionBankPage() {
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
                       <div className="flex flex-col gap-1">
-                        {question.tags.length > 0
-                          ? question.tags.map((tag) => (
-                              <Badge variant="secondary" key={tag.name}>
-                                {tag.name}
-                              </Badge>
-                            ))
-                          : "N/A"}
+                        {question.tags.length > 0 ? (
+                          question.tags.map((tag) => (
+                            <Badge variant="secondary" key={tag.name}>
+                              {tag.name}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="secondary">N/A</Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs break-words whitespace-normal">
