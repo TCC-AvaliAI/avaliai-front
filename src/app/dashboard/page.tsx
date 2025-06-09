@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
+  Search,
 } from "lucide-react";
 import Header from "@/components/header";
 import useSWR from "swr";
@@ -40,6 +41,7 @@ import { useState } from "react";
 import api from "@/lib/axios";
 import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 import { set } from "date-fns";
+import { Input } from "@/components/ui/input";
 
 interface ExamsDetails {
   total_exams: number;
@@ -72,11 +74,13 @@ export default function DashboardPage() {
     `/exams/details/`,
     fetcher
   );
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
     variant: "success",
   });
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -89,6 +93,25 @@ export default function DashboardPage() {
     `/questions/recents/?page=${currentPage}`,
     fetcher
   );
+
+  const handleSearch = async () => {
+    try {
+      const response = await api.get(`/questions/`, {
+        params: {
+          search: searchTerm,
+          page: currentPage,
+        },
+      });
+      const searchResults = response.data as RecentQuestionsProps;
+      mutateQuestions(searchResults, false);
+    } catch (error) {
+      setMessageAlert({
+        message: "Não encontramos questões com esse termo",
+        variant: "error",
+      });
+      setCurrentPage(1);
+    }
+  };
 
   async function handleDeleteQuestion(id: string) {
     try {
@@ -262,7 +285,22 @@ export default function DashboardPage() {
             {isQuestionLoading ? (
               <Loading />
             ) : (
-              <>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative w-full max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      type="text"
+                      placeholder="Buscar por título, autor, resposta ou tags..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-full max-w-md"
+                    />
+                  </div>
+                  <Button variant="outline" onClick={handleSearch}>
+                    Buscar
+                  </Button>
+                </div>
                 <Table className="overflow-hidden">
                   <TableHeader>
                     <TableRow>
@@ -344,7 +382,7 @@ export default function DashboardPage() {
                     <ChevronRight className="h-5 w-5" />
                   </Button>
                 </div>
-              </>
+              </div>
             )}
           </TabsContent>
         </Tabs>
