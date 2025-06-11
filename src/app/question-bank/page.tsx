@@ -109,11 +109,12 @@ export default function QuestionBankPage() {
     });
   };
 
+  if (isLoading) return <Loading />;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
-        {isLoading && <Loading />}
         <div className="flex flex-col gap-10">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight">
