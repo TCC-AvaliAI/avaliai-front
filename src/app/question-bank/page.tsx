@@ -28,6 +28,7 @@ import {
 import { Exam } from "@/@types/ExamProps";
 import { AttachQuestionModal } from "@/components/attach-question-modal";
 import { Badge } from "@/components/ui/badge";
+import { ExamsPageProps } from "../exams/page";
 
 interface QuestionsPageProps {
   count: number;
@@ -51,11 +52,7 @@ export default function QuestionBankPage() {
     TF: "Verdadeiro ou Falso",
     ES: "Discursiva",
   };
-  const { data: exams = [], isLoading: isLoadingExams } = useSWR<Exam[]>(
-    `/exams/`,
-    fetcher
-  );
-
+  const { data: exams } = useSWR<ExamsPageProps>(`/exams/`, fetcher);
   const {
     data: questions,
     isLoading,
@@ -135,7 +132,9 @@ export default function QuestionBankPage() {
                   className="pl-10 w-full max-w-md"
                 />
               </div>
-              <Button variant="outline" onClick={handleSearch}>Buscar</Button>
+              <Button variant="outline" onClick={handleSearch}>
+                Buscar
+              </Button>
             </div>
             <Table className="overflow-hidden">
               <TableHeader>

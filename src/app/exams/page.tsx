@@ -39,7 +39,7 @@ import { Discipline } from "@/@types/DisciplinesProps";
 import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
 
-interface ExamsPageProps {
+export interface ExamsPageProps {
   count: number;
   next: string | null;
   previous: string | null;
@@ -49,7 +49,6 @@ interface ExamsPageProps {
 export default function ExamsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [subjectFilter, setSubjectFilter] = useState("all");
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
     variant: "success",
@@ -59,10 +58,6 @@ export default function ExamsPage() {
     isLoading,
     mutate,
   } = useSWR<ExamsPageProps>(`/exams/?page=${page}`, fetcher);
-  const { data: disciplines = [] } = useSWR<Discipline[]>(
-    `/disciplines/`,
-    fetcher
-  );
 
   const appliedExams =
     exams?.results?.filter((exam) => exam.status === "Aplicada") || [];
@@ -83,8 +78,6 @@ export default function ExamsPage() {
     const searchResults = response.data as ExamsPageProps;
     mutate(searchResults, false);
   };
-
-  console.log(exams);
 
   const renderStatusBadge = (status: ExamStatus) => {
     switch (status) {

@@ -17,15 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Exam } from "@/@types/ExamProps";
 import { QuestionProps } from "@/@types/QuestionProps";
 import api from "@/lib/axios";
-import { MessageAlertProps } from "./message-alert";
-import { on } from "events";
+import { ExamsPageProps } from "@/app/exams/page";
 
 interface AttachQuestionModalProps {
   question: QuestionProps;
-  exams: Exam[];
+  exams?: ExamsPageProps;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -75,11 +73,12 @@ export function AttachQuestionModal({
               <SelectValue placeholder="Selecione uma prova" />
             </SelectTrigger>
             <SelectContent className="max-h-[200px] overflow-y-auto">
-              {exams.map((exam) => (
-                <SelectItem key={exam.id} value={exam.id}>
-                  {exam.title}
-                </SelectItem>
-              ))}
+              {exams?.results.length &&
+                exams.results.map((exam) => (
+                  <SelectItem key={exam.id} value={exam.id}>
+                    {exam.title}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
