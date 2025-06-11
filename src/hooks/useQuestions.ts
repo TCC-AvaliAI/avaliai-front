@@ -21,6 +21,10 @@ export function useQuestions() {
           ? ["Verdadeiro", "Falso"]
           : [],
       type,
+      author_name: "",
+      tags: [],
+      was_generated_by_ai: false,
+      not_attached: false,
     };
     setQuestions([...questions, newQuestion]);
   };
