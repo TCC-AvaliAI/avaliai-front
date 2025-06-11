@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import api from "@/lib/axios";
-import { NextResponse } from "next/server";
 
 export const { signIn, signOut, auth, handlers } = NextAuth({
   providers: [
@@ -32,6 +31,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       },
     },
   ],
+  trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, account, profile }) {
