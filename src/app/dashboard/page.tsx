@@ -42,6 +42,7 @@ import api from "@/lib/axios";
 import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 import { set } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { NotFoundItems } from "@/components/not-found-items";
 
 interface ExamsDetails {
   total_exams: number;
@@ -273,11 +274,10 @@ export default function DashboardPage() {
                   </Card>
                 ))
               ) : (
-                <div className="col-span-3 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma prova recente encontrada.
-                  </p>
-                </div>
+                <NotFoundItems
+                  message="Nenhuma prova encontrada"
+                  description="Tente ajustar seus filtros ou criar uma nova prova."
+                />
               )}
             </div>
           </TabsContent>
@@ -301,87 +301,96 @@ export default function DashboardPage() {
                     Buscar
                   </Button>
                 </div>
-                <Table className="overflow-hidden">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                        Título
-                      </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                        Criação
-                      </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                        Tipo
-                      </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                        Resposta Correta
-                      </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                        Ação
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recent_questions?.results.map((question) => (
-                      <TableRow key={question.id}>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          {question.title}
-                        </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          {new Date(question.created_at).toLocaleDateString(
-                            "pt-BR",
-                            {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                            }
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          {
-                            questionType[
-                              question.type as keyof typeof questionType
-                            ]
-                          }
-                        </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          {question.type === "ES"
-                            ? question.answer_text || "N/A"
-                            : question.options?.[question.answer] || "N/A"}
-                        </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          <Button
-                            variant="destructive"
-                            onClick={() =>
-                              handleDeleteQuestion(question.id as string)
-                            }
-                          >
-                            <Trash2 />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <div className="flex justify-center items-center mt-4 space-x-4">
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
-                  <span className="text-sm font-medium">
-                    Página {currentPage}
-                  </span>
-                  <Button
-                    variant="outline"
-                    disabled={!recent_questions?.next}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-                </div>
+                {recent_questions?.results.length ? (
+                  <>
+                    <Table className="overflow-hidden">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                            Título
+                          </TableHead>
+                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                            Criação
+                          </TableHead>
+                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                            Tipo
+                          </TableHead>
+                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                            Resposta Correta
+                          </TableHead>
+                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                            Ação
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {recent_questions.results.map((question) => (
+                          <TableRow key={question.id}>
+                            <TableCell className="max-w-xs break-words whitespace-normal">
+                              {question.title}
+                            </TableCell>
+                            <TableCell className="max-w-xs break-words whitespace-normal">
+                              {new Date(question.created_at).toLocaleDateString(
+                                "pt-BR",
+                                {
+                                  year: "numeric",
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                }
+                              )}
+                            </TableCell>
+                            <TableCell className="max-w-xs break-words whitespace-normal">
+                              {
+                                questionType[
+                                  question.type as keyof typeof questionType
+                                ]
+                              }
+                            </TableCell>
+                            <TableCell className="max-w-xs break-words whitespace-normal">
+                              {question.type === "ES"
+                                ? question.answer_text || "N/A"
+                                : question.options?.[question.answer] || "N/A"}
+                            </TableCell>
+                            <TableCell className="max-w-xs break-words whitespace-normal">
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  handleDeleteQuestion(question.id as string)
+                                }
+                              >
+                                <Trash2 />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div className="flex justify-center items-center mt-4 space-x-4">
+                      <Button
+                        variant="outline"
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                      <span className="text-sm font-medium">
+                        Página {currentPage}
+                      </span>
+                      <Button
+                        variant="outline"
+                        disabled={!recent_questions?.next}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <NotFoundItems
+                    message="Nenhuma questão encontrada"
+                    description="Tente ajustar seus filtros ou criar uma nova prova."
+                  />
+                )}
               </div>
             )}
           </TabsContent>

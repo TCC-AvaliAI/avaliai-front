@@ -13,13 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
@@ -35,9 +28,9 @@ import { fetcher } from "@/lib/fetcher";
 import { ExamActionsMenu } from "@/components/exam/exam-actions-menu";
 import { DifficultyLevel, Exam, ExamStatus } from "@/@types/ExamProps";
 import { Loading } from "@/components/loading/page";
-import { Discipline } from "@/@types/DisciplinesProps";
 import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
+import { NotFoundItems } from "@/components/not-found-items";
 
 export interface ExamsPageProps {
   count: number;
@@ -192,7 +185,10 @@ export default function ExamsPage() {
                             <CardTitle className="text-lg">
                               {exam.title}
                             </CardTitle>
-                            <ExamActionsMenu examId={exam.id} />
+                            <ExamActionsMenu
+                              examId={exam.id}
+                              mutateQuestions={mutate}
+                            />
                           </div>
                           <CardDescription className="flex flex-wrap gap-2 mt-1">
                             {renderStatusBadge(exam.status)}
@@ -274,36 +270,33 @@ export default function ExamsPage() {
                       </Card>
                     ))
                   ) : (
-                    <div className="col-span-full text-center py-10">
-                      <FileText className="mx-auto h-10 w-10 text-muted-foreground" />
-                      <h3 className="mt-2 text-lg font-medium">
-                        Nenhuma prova encontrada
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Tente ajustar seus filtros ou crie uma nova prova.
-                      </p>
-                    </div>
+                    <NotFoundItems
+                      message="Nenhuma prova foi encontrada"
+                      description="Tente criar uma nova prova."
+                    />
                   )}
                 </div>
-                <div className="flex justify-center items-center mt-4 space-x-4">
-                  <Button
-                    variant="outline"
-                    disabled={!exams?.previous}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
-                  <span className="text-sm font-medium">
-                    Página {currentPage}
-                  </span>
-                  <Button
-                    variant="outline"
-                    disabled={!exams?.next}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-                </div>
+                {exams?.results && exams?.results.length > 0 && (
+                  <div className="flex justify-center items-center mt-4 space-x-4">
+                    <Button
+                      variant="outline"
+                      disabled={!exams?.previous}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                    <span className="text-sm font-medium">
+                      Página {currentPage}
+                    </span>
+                    <Button
+                      variant="outline"
+                      disabled={!exams?.next}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               {[
@@ -330,7 +323,10 @@ export default function ExamsPage() {
                               <CardTitle className="text-lg">
                                 {exam.title}
                               </CardTitle>
-                              <ExamActionsMenu examId={exam.id} />
+                              <ExamActionsMenu
+                                examId={exam.id}
+                                mutateQuestions={mutate}
+                              />
                             </div>
                             <CardDescription className="flex flex-wrap gap-2 mt-1">
                               {renderStatusBadge(exam.status)}

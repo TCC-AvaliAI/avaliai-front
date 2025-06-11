@@ -14,9 +14,13 @@ import api from "@/lib/axios";
 
 interface ExamActionsMenuProps {
   examId: string;
+  mutateQuestions: () => void;
 }
 
-export function ExamActionsMenu({ examId }: ExamActionsMenuProps) {
+export function ExamActionsMenu({
+  examId,
+  mutateQuestions,
+}: ExamActionsMenuProps) {
   async function handleMarkAsApplied() {
     try {
       await api.patch(`/exams/${examId}/apply/`);
@@ -37,6 +41,7 @@ export function ExamActionsMenu({ examId }: ExamActionsMenuProps) {
   async function handleDelete() {
     try {
       await api.delete(`/exams/${examId}`);
+      mutateQuestions();
     } catch (error) {}
   }
 
