@@ -11,7 +11,6 @@ export function useQuestions() {
       title: "",
       score: 10,
       answer_text: "",
-      created_at: "",
       user: "",
       answer: 0,
       options:

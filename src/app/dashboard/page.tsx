@@ -330,7 +330,7 @@ export default function DashboardPage() {
                               {question.title}
                             </TableCell>
                             <TableCell className="max-w-xs break-words whitespace-normal">
-                              {new Date(question.created_at).toLocaleDateString(
+                              {new Date(question.created_at!).toLocaleDateString(
                                 "pt-BR",
                                 {
                                   year: "numeric",

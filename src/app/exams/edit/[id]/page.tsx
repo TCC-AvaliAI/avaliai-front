@@ -296,7 +296,7 @@ export default function CreateExamPage() {
     <>
       <div className="flex min-h-screen flex-col">
         <Header message={messageAlert} setMessage={setMessageAlert} />
-        {isLoading && <Loading />}
+        {isLoading && <Loading showText={true} />}
         <main className="flex-1 container py-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold tracking-tight">Editar prova</h1>

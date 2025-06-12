@@ -18,7 +18,9 @@ export function TFQuestion({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <SearchTag questionId={question.id} questionTags={question.tags} />
+        {question.created_at && (
+          <SearchTag questionId={question.id} questionTags={question.tags} />
+        )}
         <Label htmlFor={`question-${question.id}-text`}>Afirmação</Label>
         <Textarea
           id={`question-${question.id}-text`}

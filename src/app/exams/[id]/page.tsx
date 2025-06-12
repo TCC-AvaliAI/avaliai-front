@@ -391,67 +391,73 @@ export default function ExamDetailsPage() {
                             </div>
                           </div>
                         </div>
-                        <p className="my-2">{question.title}</p>
+                        <div className="flex justify-center flex-col">
+                          <h3 className="font-bold">Título:</h3>
+                          <p className="my-2">{question.title}</p>
+                        </div>
 
-                        {question.type === "MC" && question.options && (
-                          <div className="pl-4 space-y-1 mt-2">
-                            {question.options.map((option, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-2"
-                              >
-                                <span
-                                  className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                                    question.answer === idx
-                                      ? "bg-primary text-primary-foreground"
-                                      : "bg-muted"
-                                  }`}
+                        <div>
+                          <h3 className="font-bold">Opções:</h3>
+                          {question.type === "MC" && question.options && (
+                            <div className="pl-4 space-y-1 mt-2">
+                              {question.options.map((option, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-2"
                                 >
-                                  {String.fromCharCode(65 + idx)}
-                                </span>
-                                <span>{option}</span>
+                                  <span
+                                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                                      question.answer === idx
+                                        ? "bg-green-600 text-primary-foreground"
+                                        : "bg-muted"
+                                    }`}
+                                  >
+                                    {String.fromCharCode(65 + idx)}
+                                  </span>
+                                  <span>{option}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {question.type === "TF" && question.options && (
+                            <div className="pl-4 space-y-1 mt-2">
+                              {question.options.map((option, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-2"
+                                >
+                                  <span
+                                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                                      question.answer === idx
+                                        ? "bg-green-600 text-primary-foreground"
+                                        : "bg-muted"
+                                    }`}
+                                  >
+                                    {idx === 0 ? "V" : "F"}
+                                  </span>
+                                  <span>{option}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {question.type === "ES" &&
+                            (question.answer_text ? (
+                              <div className="pl-4 mt-2">
+                                <p className="text-sm text-muted-foreground italic">
+                                  {question.answer_text}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="pl-4 mt-2">
+                                <p className="text-sm text-muted-foreground italic">
+                                  Não existe uma resposta cadastrada para essa
+                                  questão
+                                </p>
                               </div>
                             ))}
-                          </div>
-                        )}
-
-                        {question.type === "TF" && question.options && (
-                          <div className="pl-4 space-y-1 mt-2">
-                            {question.options.map((option, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-2"
-                              >
-                                <span
-                                  className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                                    question.answer === idx
-                                      ? "bg-primary text-primary-foreground"
-                                      : "bg-muted"
-                                  }`}
-                                >
-                                  {idx === 0 ? "V" : "F"}
-                                </span>
-                                <span>{option}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {question.type === "ES" &&
-                          (question.answer_text ? (
-                            <div className="pl-4 mt-2">
-                              <p className="text-sm text-muted-foreground italic">
-                                {question.answer_text}
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="pl-4 mt-2">
-                              <p className="text-sm text-muted-foreground italic">
-                                Não existe uma resposta cadastrada para essa
-                                questão
-                              </p>
-                            </div>
-                          ))}
+                        </div>
                       </div>
                     ))}
                   </CardContent>

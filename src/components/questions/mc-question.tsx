@@ -21,7 +21,9 @@ export function MCQuestion({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <SearchTag questionId={question.id} questionTags={question.tags} />
+        {question.created_at && (
+          <SearchTag questionId={question.id} questionTags={question.tags} />
+        )}
         <Label htmlFor={`question-${question.id}-text`}>Pergunta</Label>
         <Textarea
           id={`question-${question.id}-text`}

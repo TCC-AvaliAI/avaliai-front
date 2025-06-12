@@ -7,7 +7,7 @@ export interface QuestionProps {
   score: number;
   type: QuestionType;
   user: string;
-  created_at: string;
+  created_at?: string;
   was_generated_by_ai: boolean;
   not_attached?: boolean;
   author_name: string;
