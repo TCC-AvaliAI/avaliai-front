@@ -34,6 +34,7 @@ import {
   Trash2,
   Archive,
   SquareX,
+  Calendar,
 } from "lucide-react";
 import Header from "@/components/header";
 import { Exam, ExamStatus, DifficultyLevel } from "@/@types/ExamProps";
@@ -171,6 +172,7 @@ export default function ExamDetailsPage() {
   async function handleMarkAsApplied() {
     try {
       await api.patch(`/exams/${examId}/apply/`);
+      setExamStatus("Aplicada");
       setMessageAlert({
         message: "Prova marcada como aplicada com sucesso.",
         variant: "success",
@@ -186,6 +188,7 @@ export default function ExamDetailsPage() {
   async function handleMArkAsArchived() {
     try {
       await api.patch(`/exams/${examId}/archive/`);
+      setExamStatus("Arquivada");
       setMessageAlert({
         message: "Prova arquivada com sucesso.",
         variant: "success",
@@ -201,6 +204,7 @@ export default function ExamDetailsPage() {
   async function handleMarkAsCancelled() {
     try {
       await api.patch(`/exams/${examId}/cancel/`);
+      setExamStatus("Cancelada");
       setMessageAlert({
         message: "Prova cancelada com sucesso.",
         variant: "success",
@@ -284,14 +288,6 @@ export default function ExamDetailsPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex items-center">
-                      <span className="w-32 text-sm text-muted-foreground">
-                        Criada em:
-                      </span>
-                      <span className="text-sm">
-                        {formatDate(exam.created_at)}
-                      </span>
-                    </div>
                     {exam.applied_at && (
                       <div className="flex items-center">
                         <span className="w-32 text-sm text-muted-foreground">
@@ -374,7 +370,7 @@ export default function ExamDetailsPage() {
                   <CardContent className="pt-6">
                     {exam.questions.map((question, index) => (
                       <div
-                        key={question.title}
+                        key={question.id}
                         className="mb-6 pb-6 border-b last:border-0 last:mb-0 last:pb-0"
                       >
                         <div className="flex justify-between items-start mb-2">
@@ -472,6 +468,17 @@ export default function ExamDetailsPage() {
                 <CardTitle>Resumo</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <Calendar className="h-5 w-5 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Criação</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(exam.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <Clock className="h-5 w-5 text-muted-foreground mr-2" />

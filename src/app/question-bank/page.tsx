@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Search,
+  Filter,
 } from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps } from "@/@types/QuestionProps";
@@ -30,6 +31,12 @@ import { AttachQuestionModal } from "@/components/attach-question-modal";
 import { Badge } from "@/components/ui/badge";
 import { ExamsPageProps } from "../exams/page";
 import { NotFoundItems } from "@/components/not-found-items";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 interface QuestionsPageProps {
   count: number;
@@ -41,34 +48,40 @@ interface QuestionsPageProps {
 export default function QuestionBankPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [typeQuestion, setTypeQuestion] = useState("");
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
     variant: "success",
   });
-  const [selectedQuestion, setSelectedQuestion] =
-    useState<QuestionProps | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<QuestionProps | null>(null);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
-  const questionType = {
-    MC: "Múltipla Escolha",
-    TF: "Verdadeiro ou Falso",
-    ES: "Discursiva",
-  };
   const { data: exams } = useSWR<ExamsPageProps>(`/exams/`, fetcher);
   const {
     data: questions,
     isLoading,
     mutate,
-  } = useSWR<QuestionsPageProps>(`/questions/?page=${currentPage}`, fetcher);
+  } = useSWR<QuestionsPageProps>(
+    `/questions/?page=${currentPage}&search=${searchTerm}&type=${typeQuestion}`,
+    fetcher
+  );
+
+  const questionType = {
+    MC: "Múltipla Escolha",
+    TF: "Verdadeiro ou Falso",
+    ES: "Discursiva",
+  };
 
   const handleSearch = async () => {
+    setCurrentPage(1);
     const response = await api.get(`/questions/`, {
       params: {
         search: searchTerm,
-        page: currentPage,
+        page: 1,
+        type: typeQuestion,
       },
     });
     const searchResults = response.data as QuestionsPageProps;
-    mutate(searchResults, false);
+    await mutate(searchResults, false);
   };
 
   const handleDeleteQuestion = async (id: string | undefined) => {
@@ -109,6 +122,11 @@ export default function QuestionBankPage() {
     });
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+    handleSearch();
+  }, [typeQuestion]);
+
   if (isLoading) return <Loading />;
 
   return (
@@ -122,7 +140,7 @@ export default function QuestionBankPage() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-4">
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -133,6 +151,25 @@ export default function QuestionBankPage() {
                 className="pl-10 w-full max-w-md"
               />
             </div>
+
+            <Select value={typeQuestion} onValueChange={setTypeQuestion}>
+              <SelectTrigger className="w-[220px]">
+                <div className="flex items-center truncate">
+                  <Filter className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {typeQuestion
+                      ? questionType[typeQuestion as keyof typeof questionType]
+                      : "Tipo da questão"}
+                  </span>
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MC">Múltipla Escolha</SelectItem>
+                <SelectItem value="TF">Verdadeiro ou Falso</SelectItem>
+                <SelectItem value="ES">Discursiva</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Button variant="outline" onClick={handleSearch}>
               Buscar
             </Button>
