@@ -49,39 +49,40 @@ export default function QuestionBankPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [typeQuestion, setTypeQuestion] = useState("");
+  const [questionsData, setQuestionsData] = useState<QuestionsPageProps | null>(
+    null
+  );
   const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
     message: "",
     variant: "success",
   });
-  const [selectedQuestion, setSelectedQuestion] = useState<QuestionProps | null>(null);
+  const [selectedQuestion, setSelectedQuestion] =
+    useState<QuestionProps | null>(null);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { data: exams } = useSWR<ExamsPageProps>(`/exams/`, fetcher);
-  const {
-    data: questions,
-    isLoading,
-    mutate,
-  } = useSWR<QuestionsPageProps>(
-    `/questions/?page=${currentPage}&search=${searchTerm}&type=${typeQuestion}`,
-    fetcher
-  );
 
-  const questionType = {
-    MC: "Múltipla Escolha",
-    TF: "Verdadeiro ou Falso",
-    ES: "Discursiva",
+  const fetchQuestions = async (page: number, search: string, type: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.get("/questions/", {
+        params: {
+          page,
+          search,
+          type,
+        },
+      });
+      setQuestionsData(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar questões:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSearch = async () => {
     setCurrentPage(1);
-    const response = await api.get(`/questions/`, {
-      params: {
-        search: searchTerm,
-        page: 1,
-        type: typeQuestion,
-      },
-    });
-    const searchResults = response.data as QuestionsPageProps;
-    await mutate(searchResults, false);
+    await fetchQuestions(1, searchTerm, typeQuestion);
   };
 
   const handleDeleteQuestion = async (id: string | undefined) => {
@@ -97,10 +98,6 @@ export default function QuestionBankPage() {
         variant: "error",
       });
     }
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   const handleOpenAttachModal = (question: QuestionProps) => {
@@ -123,11 +120,16 @@ export default function QuestionBankPage() {
   };
 
   useEffect(() => {
-    setCurrentPage(1);
-    handleSearch();
-  }, [typeQuestion]);
+    fetchQuestions(currentPage, "", typeQuestion);
+  }, [currentPage]);
 
   if (isLoading) return <Loading />;
+
+  const questionType = {
+    MC: "Múltipla Escolha",
+    TF: "Verdadeiro ou Falso",
+    ES: "Discursiva",
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -175,7 +177,7 @@ export default function QuestionBankPage() {
             </Button>
           </div>
 
-          {questions?.results && questions.results.length ? (
+          {questionsData?.results && questionsData.results.length ? (
             <>
               <Table className="overflow-hidden">
                 <TableHeader>
@@ -207,7 +209,7 @@ export default function QuestionBankPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {questions.results.map((question) => (
+                  {questionsData.results.map((question) => (
                     <TableRow key={question.id}>
                       <TableCell className="max-w-xs break-words whitespace-normal">
                         {question.author_name}
@@ -278,8 +280,8 @@ export default function QuestionBankPage() {
               <div className="flex justify-center items-center mt-4 space-x-4">
                 <Button
                   variant="outline"
-                  disabled={!questions.previous}
-                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={!questionsData.previous}
+                  onClick={() => setCurrentPage(currentPage - 1)}
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
@@ -288,8 +290,8 @@ export default function QuestionBankPage() {
                 </span>
                 <Button
                   variant="outline"
-                  disabled={!questions.next}
-                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={!questionsData.next}
+                  onClick={() => setCurrentPage(currentPage + 1)}
                 >
                   <ChevronRight className="h-5 w-5" />
                 </Button>
