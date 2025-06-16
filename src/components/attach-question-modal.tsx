@@ -60,7 +60,7 @@ export function AttachQuestionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent inert={true} className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Anexar Questão à Prova</DialogTitle>
           <DialogDescription>
