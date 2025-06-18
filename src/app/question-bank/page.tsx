@@ -26,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Exam } from "@/@types/ExamProps";
 import { AttachQuestionModal } from "@/components/attach-question-modal";
 import { Badge } from "@/components/ui/badge";
 import { ExamsPageProps } from "../exams/page";
@@ -69,7 +68,7 @@ export default function QuestionBankPage() {
         params: {
           page,
           search,
-          type,
+          type: type === "ALL" ? "" : type,
         },
       });
       setQuestionsData(response.data);
@@ -120,7 +119,7 @@ export default function QuestionBankPage() {
   };
 
   useEffect(() => {
-    fetchQuestions(currentPage, "", typeQuestion);
+    fetchQuestions(currentPage, searchTerm, typeQuestion);
   }, [currentPage]);
 
   if (isLoading) return <Loading />;
@@ -129,6 +128,7 @@ export default function QuestionBankPage() {
     MC: "Múltipla Escolha",
     TF: "Verdadeiro ou Falso",
     ES: "Discursiva",
+    ALL: "Todos",
   };
 
   return (
@@ -166,6 +166,7 @@ export default function QuestionBankPage() {
                 </div>
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="ALL">Todos</SelectItem>
                 <SelectItem value="MC">Múltipla Escolha</SelectItem>
                 <SelectItem value="TF">Verdadeiro ou Falso</SelectItem>
                 <SelectItem value="ES">Discursiva</SelectItem>
