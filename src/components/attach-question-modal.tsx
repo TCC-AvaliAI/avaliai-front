@@ -60,7 +60,10 @@ export function AttachQuestionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent inert={true} className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Anexar Questão à Prova</DialogTitle>
           <DialogDescription>
@@ -68,8 +71,18 @@ export function AttachQuestionModal({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <Select value={selectedExam} onValueChange={setSelectedExam}>
-            <SelectTrigger className="w-full">
+          <Select
+            value={selectedExam}
+            onValueChange={setSelectedExam}
+            onOpenChange={(open) => {
+              if (!open) {
+                setTimeout(() => {
+                  document.getElementById("select-trigger")?.focus();
+                }, 0);
+              }
+            }}
+          >
+            <SelectTrigger id="select-trigger" className="w-full">
               <SelectValue placeholder="Selecione uma prova" />
             </SelectTrigger>
             <SelectContent className="max-h-[200px] overflow-y-auto">
