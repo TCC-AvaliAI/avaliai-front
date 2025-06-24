@@ -31,7 +31,6 @@ import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
-import { useSession } from "next-auth/react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,16 +42,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
 import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
-import { useRouter } from "next/navigation";
 import { Loading } from "@/components/loading/page";
 import { MCQuestion } from "@/components/questions/mc-question";
 import { TFQuestion } from "@/components/questions/tf-question";
 import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
-import { Exam } from "@/@types/ExamProps";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 
@@ -68,21 +64,49 @@ type ClassroomProps = {
   user: string;
 };
 
-const examFormSchema = z.object({
-  title: z.string().min(1, "O título é obrigatório"),
-  description: z.string().min(1, "A descrição é obrigatória"),
-  theme: z.string().min(1, "O tema é obrigatório"),
-  discipline: z.string().min(1, "Selecione uma disciplina"),
-  classroom: z.string().min(1, "Selecione uma turma"),
-  difficulty: z.enum(["EASY", "MEDIUM", "HARD"], {
-    required_error: "Selecione a dificuldade",
-  }),
-  amountQuestions: z.enum(["5", "10", "15"], {
-    required_error: "Selecione a quantidade de questões",
-  }),
-  apiKey: z.string().default(""),
-  model: z.string().min(1, "Selecione um modelo de IA"),
-});
+const examFormSchema = z
+  .object({
+    title: z.string().min(1, "O título é obrigatório"),
+    description: z.string().min(1, "A descrição é obrigatória"),
+    theme: z.string().min(1, "O tema é obrigatório"),
+    discipline: z.string().min(1, "Selecione uma disciplina"),
+    classroom: z.string().min(1, "Selecione uma turma"),
+    difficulty: z.enum(["EASY", "MEDIUM", "HARD"], {
+      required_error: "Selecione a dificuldade",
+    }),
+    amountQuestions: z
+      .string()
+      .min(1, "Selecione ou digite a quantidade de questões"),
+    otherAmountQuestions: z.string().optional(),
+    typeQuestions: z.string().min(1, "Selecione o tipo de questões"),
+    otherTypeQuestions: z.string().optional(),
+    apiKey: z.string().default(""),
+    model: z.string().min(1, "Selecione um modelo de IA"),
+  })
+  .refine(
+    (data) => {
+      if (data.amountQuestions === "other") {
+        return !!data.otherAmountQuestions;
+      }
+      return true;
+    },
+    {
+      message: "Digite a quantidade de questões",
+      path: ["otherAmountQuestions"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.typeQuestions === "other") {
+        return !!data.otherTypeQuestions;
+      }
+      return true;
+    },
+    {
+      message: "Digite o tipo de questão",
+      path: ["otherTypeQuestions"],
+    }
+  );
 
 type ExamFormValues = z.infer<typeof examFormSchema>;
 
@@ -112,6 +136,9 @@ export default function CreateExamPage() {
       amountQuestions: "5",
       model: "default",
       apiKey: "",
+      otherAmountQuestions: "",
+      typeQuestions: "MC",
+      otherTypeQuestions: "",
     },
   });
 
@@ -160,7 +187,12 @@ export default function CreateExamPage() {
     setIsLoading(true);
     try {
       const enhancedDescription = `
-        Deve conter as seguintes características: ${data.amountQuestions} é quantidade de questões e ${data.description}`.trim();
+        Deve conter as seguintes características: ${
+          data.otherAmountQuestions || data.amountQuestions
+        } é quantidade de questões. As questões devem ser do tipo ${
+        data.otherTypeQuestions || data.typeQuestions
+      }, e ${data.description}`.trim();
+      
       const payload = {
         ...data,
         description: enhancedDescription,
@@ -168,6 +200,8 @@ export default function CreateExamPage() {
         api_key: data.apiKey,
       };
       const response = await api.post("/exams/ai/", { ...payload, questions });
+      form.setValue("otherAmountQuestions", "");
+      form.setValue("otherTypeQuestions", "");
       const exam = response.data;
       setTimeout(() => {
         setMessageAlert({
@@ -213,6 +247,8 @@ export default function CreateExamPage() {
       };
 
       const response = await api.post("/exams/", payload);
+      form.setValue("otherAmountQuestions", "");
+      form.setValue("otherTypeQuestions", "");
       const exam = response.data;
       setTimeout(() => {
         setMessageAlert({
@@ -375,7 +411,7 @@ export default function CreateExamPage() {
                             <Hash className="w-5 h-5" />
                             Configurações da Prova
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <FormField
                               control={form.control}
                               name="amountQuestions"
@@ -385,6 +421,7 @@ export default function CreateExamPage() {
                                   <RadioGroup
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
+                                    className="flex flex-col space-y-2"
                                   >
                                     <div className="flex items-center space-x-2">
                                       <RadioGroupItem value="5" id="q5" />
@@ -397,6 +434,110 @@ export default function CreateExamPage() {
                                     <div className="flex items-center space-x-2">
                                       <RadioGroupItem value="15" id="q15" />
                                       <Label htmlFor="q15">15 questões</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem
+                                        value="other"
+                                        id="qother"
+                                      />
+                                      <Label htmlFor="qother">Outros:</Label>
+                                      <FormField
+                                        control={form.control}
+                                        name="otherAmountQuestions"
+                                        render={({ field }) => (
+                                          <Input
+                                            type="number"
+                                            min="1"
+                                            className="w-20 h-8"
+                                            placeholder="Qtd"
+                                            disabled={
+                                              form.watch("amountQuestions") !==
+                                              "other"
+                                            }
+                                            {...field}
+                                            onClick={() => {
+                                              const radioInput =
+                                                document.getElementById(
+                                                  "qother"
+                                                ) as HTMLInputElement;
+                                              if (radioInput)
+                                                radioInput.checked = true;
+                                              form.setValue(
+                                                "amountQuestions",
+                                                "other"
+                                              );
+                                            }}
+                                          />
+                                        )}
+                                      />
+                                    </div>
+                                  </RadioGroup>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="typeQuestions"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tipo das questões</FormLabel>
+                                  <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="flex flex-col space-y-2"
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="MC" id="MC" />
+                                      <Label htmlFor="MC">
+                                        Multipla Escolha
+                                      </Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="TF" id="TF" />
+                                      <Label htmlFor="TF">
+                                        Verdadeiro ou Falso
+                                      </Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="ES" id="ES" />
+                                      <Label htmlFor="ES">Discurssiva</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem
+                                        value="other"
+                                        id="qother"
+                                      />
+                                      <Label htmlFor="qother">Outros:</Label>
+                                      <FormField
+                                        control={form.control}
+                                        name="otherTypeQuestions"
+                                        render={({ field }) => (
+                                          <Input
+                                            type="text"
+                                            className="w-50 h-8"
+                                            placeholder="Ex: Discurssiva e Multipla escolha"
+                                            disabled={
+                                              form.watch("typeQuestions") !==
+                                              "other"
+                                            }
+                                            {...field}
+                                            onClick={() => {
+                                              const radioInput =
+                                                document.getElementById(
+                                                  "qother"
+                                                ) as HTMLInputElement;
+                                              if (radioInput)
+                                                radioInput.checked = true;
+                                              form.setValue(
+                                                "typeQuestions",
+                                                "other"
+                                              );
+                                            }}
+                                          />
+                                        )}
+                                      />
                                     </div>
                                   </RadioGroup>
                                   <FormMessage />
