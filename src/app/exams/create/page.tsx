@@ -192,7 +192,7 @@ export default function CreateExamPage() {
         } é quantidade de questões. As questões devem ser do tipo ${
         data.otherTypeQuestions || data.typeQuestions
       }, e ${data.description}`.trim();
-      
+
       const payload = {
         ...data,
         description: enhancedDescription,
@@ -411,7 +411,7 @@ export default function CreateExamPage() {
                             <Hash className="w-5 h-5" />
                             Configurações da Prova
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                          <div className="flex gap-20 lg:flex-row">
                             <FormField
                               control={form.control}
                               name="amountQuestions"
@@ -509,14 +509,14 @@ export default function CreateExamPage() {
                                         value="other"
                                         id="qother"
                                       />
-                                      <Label htmlFor="qother">Outros:</Label>
+                                      <Label htmlFor="qother">Personalizado:</Label>
                                       <FormField
                                         control={form.control}
                                         name="otherTypeQuestions"
                                         render={({ field }) => (
                                           <Input
                                             type="text"
-                                            className="w-50 h-8"
+                                            className="w-60 h-8"
                                             placeholder="Ex: Discurssiva e Multipla escolha"
                                             disabled={
                                               form.watch("typeQuestions") !==
