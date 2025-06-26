@@ -24,6 +24,7 @@ import {
   Target,
   Users,
   BookOpen,
+  Unlink,
 } from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
@@ -50,6 +51,12 @@ import { TFQuestion } from "@/components/questions/tf-question";
 import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type DisciplineProps = {
   id: string;
@@ -172,6 +179,21 @@ export default function CreateExamPage() {
     } catch (error) {
       setMessageAlert({
         message: "Erro ao deletar a questão",
+        variant: "error",
+      });
+    }
+  }
+  async function handleDetachQuestion(id: string) {
+    try {
+      await api.delete(`/exams/${examId}/questions/${id}`);
+      removeQuestion(id);
+      setMessageAlert({
+        message: "Questão removida com sucesso",
+        variant: "success",
+      });
+    } catch (error) {
+      setMessageAlert({
+        message: "Erro ao remover a questão",
         variant: "error",
       });
     }
@@ -577,13 +599,43 @@ export default function CreateExamPage() {
                             >
                               <Copy className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteQuestion(question.id!)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleDetachQuestion(question.id!)
+                                    }
+                                    className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                  >
+                                    <Unlink className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Desanexar questão da prova</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteQuestion(question.id!)}
+                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Excluir questão</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                             <Badge>
                               {question.was_generated_by_ai ? "IA" : "Você"}
                             </Badge>

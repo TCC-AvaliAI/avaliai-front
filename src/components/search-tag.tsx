@@ -15,6 +15,12 @@ import { Label } from "./ui/label";
 import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
 import api from "@/lib/axios";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 type TagProps = {
   id: string;
@@ -60,6 +66,9 @@ export function SearchTag({ questionId, questionTags }: SearchTagProps) {
         name,
       });
       const newTag = response.data;
+      await api.post(`/questions/${questionId}/tags/`, {
+        tags: [newTag.id],
+      });
       setTags((prev) => [...prev, newTag]);
       setInputValue("");
       setIsPopoverOpen(false);
@@ -122,13 +131,22 @@ export function SearchTag({ questionId, questionTags }: SearchTagProps) {
                 onChange={(e) => setInputValue(e.target.value)}
                 className="flex-1 pr-8"
               />
-              <Button
-                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                variant="ghost"
-                className="absolute right-0 top-0 h-full px-2"
-              >
-                <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                      variant="ghost"
+                      className="absolute right-0 top-0 h-full px-2"
+                    >
+                      <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Buscar tag</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </PopoverTrigger>
           <PopoverContent className="p-0 w-[300px]" align="start">
