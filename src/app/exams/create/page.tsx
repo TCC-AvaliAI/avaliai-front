@@ -176,8 +176,14 @@ export default function CreateExamPage() {
     return questionComponent[question.type as QuestionType] || null;
   };
 
-  const { data: disciplines } = useSWR(`/disciplines/`, fetcher);
-  const { data: classrooms } = useSWR(`/classrooms/`, fetcher);
+  const { data: disciplines } = useSWR<DisciplineProps[]>(
+    `/disciplines/`,
+    fetcher
+  );
+  const { data: classrooms } = useSWR<ClassroomProps[]>(
+    `/classrooms/`,
+    fetcher
+  );
 
   const onSubmit = async (data: ExamFormValues) => {
     return data;
@@ -330,15 +336,21 @@ export default function CreateExamPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {disciplines?.map(
-                                      (discipline: DisciplineProps) => (
-                                        <SelectItem
-                                          key={discipline.id}
-                                          value={discipline.id}
-                                        >
-                                          {discipline.name}
-                                        </SelectItem>
+                                    {disciplines?.length ? (
+                                      disciplines.map(
+                                        (discipline: DisciplineProps) => (
+                                          <SelectItem
+                                            key={discipline.id}
+                                            value={discipline.id}
+                                          >
+                                            {discipline.name}
+                                          </SelectItem>
+                                        )
                                       )
+                                    ) : (
+                                      <SelectItem value="unknown" disabled>
+                                        Nenhuma disciplina encontrada
+                                      </SelectItem>
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -366,15 +378,21 @@ export default function CreateExamPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {classrooms?.map(
-                                      (classroom: ClassroomProps) => (
-                                        <SelectItem
-                                          key={classroom.id}
-                                          value={classroom.id}
-                                        >
-                                          {classroom.name}
-                                        </SelectItem>
+                                    {classrooms?.length ? (
+                                      classrooms.map(
+                                        (classroom: ClassroomProps) => (
+                                          <SelectItem
+                                            key={classroom.id}
+                                            value={classroom.id}
+                                          >
+                                            {classroom.name}
+                                          </SelectItem>
+                                        )
                                       )
+                                    ) : (
+                                      <SelectItem value="unknown" disabled>
+                                        Nenhuma turma encontrada
+                                      </SelectItem>
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -509,7 +527,9 @@ export default function CreateExamPage() {
                                         value="other"
                                         id="qother"
                                       />
-                                      <Label htmlFor="qother">Personalizado:</Label>
+                                      <Label htmlFor="qother">
+                                        Personalizado:
+                                      </Label>
                                       <FormField
                                         control={form.control}
                                         name="otherTypeQuestions"
