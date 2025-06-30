@@ -70,8 +70,8 @@ export default function MainContent() {
                   <FileText className="h-6 w-6 text-primary mb-2" />
                   <CardTitle>Criação de provas</CardTitle>
                   <CardDescription>
-                    Crie provas personalizadas com opções para aplicação online
-                    ou impressa.
+                    Crie provas personalizadas com opções manuais ou geradas por
+                    IA, adaptando-se às suas necessidades.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -91,7 +91,7 @@ export default function MainContent() {
                   <CardTitle>Banco de questões</CardTitle>
                   <CardDescription>
                     Organize e reutilize questões por disciplina, série e nível
-                    de dificuldade.
+                    de dificuldade, incluindo questões de outros professores.
                   </CardDescription>
                 </CardHeader>
               </Card>
