@@ -139,7 +139,8 @@ export default function ExamDetailsPage() {
       }
     } catch (error) {
       setMessageAlert({
-        message: "Erro ao gerar QR Code.",
+        message:
+          "Erro ao gerar QR Code. Possivelmente a prova já possui um QR Code gerado.",
         variant: "error",
       });
     }
@@ -163,7 +164,7 @@ export default function ExamDetailsPage() {
       });
     } catch (error) {
       setMessageAlert({
-        message: "Erro ao baixar a prova.",
+        message: "Erro ao baixar a prova. Experimente gerar o QR Code.",
         variant: "error",
       });
     }
@@ -357,108 +358,92 @@ export default function ExamDetailsPage() {
               </CardFooter>
             </Card>
 
-            <Tabs defaultValue="questions" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="questions">
-                  Questões ({exam.questions.length})
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="questions">
-                <Card>
-                  <CardContent className="pt-6">
-                    {exam.questions.map((question, index) => (
-                      <div
-                        key={question.id}
-                        className="mb-6 pb-6 border-b last:border-0 last:mb-0 last:pb-0"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-medium">Questão {index + 1}</h3>
-                            <div className="flex gap-2 mt-1">
-                              <Badge variant="outline">
-                                {getQuestionTypeLabel(question.type)}
-                              </Badge>
-                              <Badge variant="outline">
-                                {question.score}{" "}
-                                {question.score === 1 ? "ponto" : "pontos"}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex justify-center flex-col">
-                          <h3 className="font-bold">Título:</h3>
-                          <p className="my-2">{question.title}</p>
-                        </div>
-
-                        <div>
-                          <h3 className="font-bold">Opções:</h3>
-                          {question.type === "MC" && question.options && (
-                            <div className="pl-4 space-y-1 mt-2">
-                              {question.options.map((option, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center gap-2"
-                                >
-                                  <span
-                                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                                      question.answer === idx
-                                        ? "bg-green-600 text-primary-foreground"
-                                        : "bg-muted"
-                                    }`}
-                                  >
-                                    {String.fromCharCode(65 + idx)}
-                                  </span>
-                                  <span>{option}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {question.type === "TF" && question.options && (
-                            <div className="pl-4 space-y-1 mt-2">
-                              {question.options.map((option, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center gap-2"
-                                >
-                                  <span
-                                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                                      question.answer === idx
-                                        ? "bg-green-600 text-primary-foreground"
-                                        : "bg-muted"
-                                    }`}
-                                  >
-                                    {idx === 0 ? "V" : "F"}
-                                  </span>
-                                  <span>{option}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {question.type === "ES" &&
-                            (question.answer_text ? (
-                              <div className="pl-4 mt-2">
-                                <p className="text-sm text-muted-foreground italic">
-                                  {question.answer_text}
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="pl-4 mt-2">
-                                <p className="text-sm text-muted-foreground italic">
-                                  Não existe uma resposta cadastrada para essa
-                                  questão
-                                </p>
-                              </div>
-                            ))}
+            <Card>
+              <CardContent className="pt-6">
+                {exam.questions.map((question, index) => (
+                  <div
+                    key={question.id}
+                    className="mb-6 pb-6 border-b last:border-0 last:mb-0 last:pb-0"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-medium">Questão {index + 1}</h3>
+                        <div className="flex gap-2 mt-1">
+                          <Badge variant="outline">
+                            {getQuestionTypeLabel(question.type)}
+                          </Badge>
+                          <Badge variant="outline">
+                            {question.score}{" "}
+                            {question.score === 1 ? "ponto" : "pontos"}
+                          </Badge>
                         </div>
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                    </div>
+                    <div className="flex justify-center flex-col">
+                      <h3 className="font-bold">Título:</h3>
+                      <p className="my-2">{question.title}</p>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold">Opções:</h3>
+                      {question.type === "MC" && question.options && (
+                        <div className="pl-4 space-y-1 mt-2">
+                          {question.options.map((option, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span
+                                className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                                  question.answer === idx
+                                    ? "bg-green-600 text-primary-foreground"
+                                    : "bg-muted"
+                                }`}
+                              >
+                                {String.fromCharCode(65 + idx)}
+                              </span>
+                              <span>{option}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {question.type === "TF" && question.options && (
+                        <div className="pl-4 space-y-1 mt-2">
+                          {question.options.map((option, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span
+                                className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                                  question.answer === idx
+                                    ? "bg-green-600 text-primary-foreground"
+                                    : "bg-muted"
+                                }`}
+                              >
+                                {idx === 0 ? "V" : "F"}
+                              </span>
+                              <span>{option}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {question.type === "ES" &&
+                        (question.answer_text ? (
+                          <div className="pl-4 mt-2">
+                            <p className="text-sm text-muted-foreground italic">
+                              {question.answer_text}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="pl-4 mt-2">
+                            <p className="text-sm text-muted-foreground italic">
+                              Não existe uma resposta cadastrada para essa
+                              questão
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </div>
 
           <div className="lg:w-1/3 space-y-6">
