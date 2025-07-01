@@ -362,7 +362,6 @@ export default function ExamDetailsPage() {
                 <TabsTrigger value="questions">
                   Questões ({exam.questions.length})
                 </TabsTrigger>
-                <TabsTrigger value="statistics">Resultados</TabsTrigger>
               </TabsList>
 
               <TabsContent value="questions">
