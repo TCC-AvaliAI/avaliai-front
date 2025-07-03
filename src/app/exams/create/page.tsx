@@ -221,7 +221,7 @@ export default function CreateExamPage() {
     } catch (error) {
       setTimeout(() => {
         setMessageAlert({
-          message: "Erro ao gerar a prova com IA.",
+          message: "Erro ao gerar a prova com IA. Experimente gerar novamente com outro modelo.",
           variant: "error",
         });
       }, 100);
