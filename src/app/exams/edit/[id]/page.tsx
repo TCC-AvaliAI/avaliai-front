@@ -320,7 +320,7 @@ export default function CreateExamPage() {
         <Header message={messageAlert} setMessage={setMessageAlert} />
         {isLoading && <Loading showText={true} />}
         <main className="flex-1 container py-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
             <h1 className="text-3xl font-bold tracking-tight">Editar prova</h1>
           </div>
           <Form {...form}>
@@ -445,59 +445,62 @@ export default function CreateExamPage() {
                           )}
                         />
 
-                        <div className="flex items-center justify-between">
-                          <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                              <FormItem className="mt-4">
-                                <FormLabel>Descrição/Instruções</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    className="w-[600px]"
-                                    placeholder="Instruções para a IA..."
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="model"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>
-                                  <Sparkles className="h-4 w-4" />
-                                  Escolher modelo de IA
-                                </FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                >
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                          <div className="flex-1">
+                            <FormField
+                              control={form.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem className="mt-4">
+                                  <FormLabel>Descrição/Instruções</FormLabel>
                                   <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione o tema" />
-                                    </SelectTrigger>
+                                    <Textarea
+                                      className="w-full max-w-full min-w-0"
+                                      placeholder="Instruções para a IA..."
+                                      {...field}
+                                    />
                                   </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="default">
-                                      Gemini (Grátis)
-                                    </SelectItem>
-                                    <SelectItem value="groq">
-                                      Groq (Grátis)
-                                    </SelectItem>
-                                    <SelectItem value="gpt">
-                                      Chatgpt 4o
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="flex-1 md:max-w-xs">
+                            <FormField
+                              control={form.control}
+                              name="model"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    <Sparkles className="h-4 w-4" />
+                                    Escolher modelo de IA
+                                  </FormLabel>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione o tema" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="default">
+                                        Gemini (Grátis)
+                                      </SelectItem>
+                                      <SelectItem value="groq">
+                                        Groq (Grátis)
+                                      </SelectItem>
+                                      <SelectItem value="gpt">
+                                        Chatgpt 4o
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                         {form.watch("model") === "gpt" && (
                           <div className="space-y-2">
@@ -557,6 +560,30 @@ export default function CreateExamPage() {
                     </CardContent>
                   </Card>
 
+                  {/* Resumo da prova - visível apenas em telas pequenas */}
+                  <Card className="block lg:hidden">
+                    <CardContent className="pt-6">
+                      <h3 className="font-medium mb-4">Resumo da Prova</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Total de questões:</span>
+                          <span className="text-sm font-medium">
+                            {questions.length}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Pontuação total:</span>
+                          <span className="text-sm font-medium">
+                            {questions.reduce(
+                              (sum, q) => sum + (q.score || 1),
+                              0
+                            )}{" "}
+                            pontos
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   {questions.map((question, index) => (
                     <Card
                       key={question.id}
@@ -565,12 +592,13 @@ export default function CreateExamPage() {
                       }`}
                     >
                       <CardContent className="pt-6">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                           <div className="flex items-center space-x-2">
                             <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
                             <h3 className="font-medium">Questão {index + 1}</h3>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          {/* Ajuste para responsividade dos botões */}
+                          <div className="flex items-center flex-wrap gap-2 max-w-full">
                             <div className="flex items-center space-x-2">
                               <Label
                                 htmlFor={`question-${question.id}-points`}
@@ -625,7 +653,9 @@ export default function CreateExamPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleDeleteQuestion(question.id!)}
+                                    onClick={() =>
+                                      handleDeleteQuestion(question.id!)
+                                    }
                                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -669,7 +699,7 @@ export default function CreateExamPage() {
                   <div className="flex justify-center">
                     <Card className="w-full">
                       <CardContent className="justify-center items-center">
-                        <div className="flex justify-around">
+                        <div className="flex flex-wrap justify-center gap-2 w-full">
                           <Button
                             variant="outline"
                             onClick={() => addQuestion("MC")}
@@ -697,7 +727,8 @@ export default function CreateExamPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                {/* Resumo da prova - visível apenas em telas grandes */}
+                <div className="space-y-6 hidden lg:block">
                   <Card>
                     <CardContent className="pt-6">
                       <h3 className="font-medium mb-4">Resumo da Prova</h3>

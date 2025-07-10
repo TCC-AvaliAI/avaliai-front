@@ -236,7 +236,7 @@ export default function ExamDetailsPage() {
     <div className="flex min-h-screen flex-col">
       <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6">
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex flex-col gap-2 mb-6 sm:flex-row sm:items-center">
           <Link href="/exams">
             <Button variant="ghost" size="sm">
               <ChevronLeft className="mr-1 h-4 w-4" />
@@ -247,8 +247,10 @@ export default function ExamDetailsPage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          <div className="lg:w-2/3 space-y-6">
-            <Card>
+          {/* Coluna principal: informações gerais e listagem de questões */}
+          <div className="lg:w-2/3 space-y-6 flex flex-col order-1">
+            {/* Card de informações gerais */}
+            <Card className="order-1">
               <CardHeader className="pb-2">
                 <div className="flex flex-wrap gap-2 mb-2">
                   {renderStatusBadge(examStatus)}
@@ -357,8 +359,81 @@ export default function ExamDetailsPage() {
                 </div>
               </CardFooter>
             </Card>
-
-            <Card>
+            {/* Card de Resumo */}
+            <Card className="order-2 lg:hidden">
+              <CardHeader>
+                <CardTitle>Resumo</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <Calendar className="h-5 w-5 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Criação</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(exam.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Duração</p>
+                      <p className="text-sm text-muted-foreground">
+                        {exam.duration} minutos
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <Star className="h-5 w-5 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Pontuação</p>
+                      <p className="text-sm text-muted-foreground">
+                        {exam.score} ponto(s)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Card de Ações Rápidas */}
+            <Card className="order-3 lg:hidden">
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={handleDownloadExam}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Baixar Prova (PDF)
+                </Button>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={handleGenerateQRCode}
+                >
+                  <QrCode className="mr-2 h-4 w-4" />
+                  Gerar QR Code
+                </Button>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={handleMarkAsApplied}
+                >
+                  <FileCheck className="mr-2 h-4 w-4" />
+                  Marcar como Aplicada
+                </Button>
+              </CardContent>
+            </Card>
+            {/* Listagem das questões */}
+            <Card className="order-4">
               <CardContent className="pt-6">
                 {exam.questions.map((question, index) => (
                   <div
@@ -445,8 +520,8 @@ export default function ExamDetailsPage() {
               </CardContent>
             </Card>
           </div>
-
-          <div className="lg:w-1/3 space-y-6">
+          {/* Coluna lateral: Resumo e Ações rápidas no desktop */}
+          <div className="lg:w-1/3 space-y-6 hidden lg:block order-2">
             <Card>
               <CardHeader>
                 <CardTitle>Resumo</CardTitle>
@@ -487,7 +562,6 @@ export default function ExamDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle>Ações Rápidas</CardTitle>

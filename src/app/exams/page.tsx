@@ -124,21 +124,23 @@ export default function ExamsPage() {
           <Loading />
         ) : (
           <>
-            <div className="flex items-center justify-between mb-6">
+            {/* Título e botão Nova Prova lado a lado SEMPRE */}
+            <div className="flex flex-row items-center justify-between mb-6 gap-2 flex-wrap">
               <h1 className="text-3xl font-bold tracking-tight">
                 Minhas Provas
               </h1>
               <Link href="/exams/create">
-                <Button>
+                <Button className="w-auto">
                   <Plus className="mr-2 h-4 w-4" />
                   Nova Prova
                 </Button>
               </Link>
             </div>
 
+            {/* Busca: input e botão lado a lado sempre */}
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-row items-center gap-2 w-full">
                   <div className="relative w-full max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
@@ -149,31 +151,38 @@ export default function ExamsPage() {
                       className="pl-10 w-full max-w-md"
                     />
                   </div>
-                  <Button variant="outline" onClick={handleSearch}>
+                  <Button
+                    variant="outline"
+                    onClick={handleSearch}
+                    className="whitespace-nowrap"
+                  >
                     Buscar
                   </Button>
                 </div>
               </div>
             </div>
 
+            {/* TabsList com rolagem horizontal real */}
             <Tabs defaultValue="all" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="all">
-                  Todas ({exams?.results.length})
-                </TabsTrigger>
-                <TabsTrigger value="Aplicada">
-                  Aplicadas ({appliedExams.length})
-                </TabsTrigger>
-                <TabsTrigger value="Pendente">
-                  Pendentes ({pendingExams.length})
-                </TabsTrigger>
-                <TabsTrigger value="Cancelada">
-                  Canceladas ({cancelledExams.length})
-                </TabsTrigger>
-                <TabsTrigger value="Arquivada">
-                  Arquivadas ({archivedExams.length})
-                </TabsTrigger>
-              </TabsList>
+              <div className="w-full overflow-x-auto">
+                <TabsList className="flex flex-nowrap min-w-[500px] w-max">
+                  <TabsTrigger value="all">
+                    Todas ({exams?.results.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="Aplicada">
+                    Aplicadas ({appliedExams.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="Pendente">
+                    Pendentes ({pendingExams.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="Cancelada">
+                    Canceladas ({cancelledExams.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="Arquivada">
+                    Arquivadas ({archivedExams.length})
+                  </TabsTrigger>
+                </TabsList>
+              </div>
               <TabsContent value="all">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {exams && exams.results.length > 0 ? (

@@ -171,7 +171,7 @@ export default function ManagementPage() {
     <div className="flex min-h-screen flex-col">
       <Header message={messageAlert} setMessage={setMessageAlert} />
       <main className="flex-1 container py-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight">Gerenciamento</h1>
         </div>
 
@@ -248,48 +248,50 @@ export default function ManagementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-full">Nome</TableHead>
-                      <TableHead className="w-[100px] text-right">
-                        Ações
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoadingDisciplines ? (
+                <div className="w-full">
+                  <Table className="w-full min-w-0">
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={2} className="text-center">
-                          Carregando disciplinas...
-                        </TableCell>
+                        <TableHead className="w-full">Nome</TableHead>
+                        <TableHead className="w-[60px] text-right">
+                          Ações
+                        </TableHead>
                       </TableRow>
-                    ) : disciplines && disciplines.length > 0 ? (
-                      disciplines.map((discipline) => (
-                        <TableRow key={discipline.id}>
-                          <TableCell>{discipline.name}</TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() =>
-                                handleDeteleDiscipline(discipline.id!)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoadingDisciplines ? (
+                        <TableRow>
+                          <TableCell colSpan={2} className="text-center">
+                            Carregando disciplinas...
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={2} className="text-center">
-                          Nenhuma disciplina cadastrada.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : disciplines && disciplines.length > 0 ? (
+                        disciplines.map((discipline) => (
+                          <TableRow key={discipline.id}>
+                            <TableCell className="truncate">{discipline.name}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() =>
+                                  handleDeteleDiscipline(discipline.id!)
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={2} className="text-center">
+                            Nenhuma disciplina cadastrada.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -382,50 +384,52 @@ export default function ManagementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[40%]">Nome</TableHead>
-                      <TableHead className="w-[40%]">Código</TableHead>
-                      <TableHead className="w-[100px] text-right">
-                        Ações
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoadingClassrooms ? (
+                <div className="overflow-x-auto w-full">
+                  <Table className="min-w-[400px]">
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={3} className="text-center">
-                          Carregando turmas...
-                        </TableCell>
+                        <TableHead className="w-[40%]">Nome</TableHead>
+                        <TableHead className="w-[40%]">Código</TableHead>
+                        <TableHead className="w-[100px] text-right">
+                          Ações
+                        </TableHead>
                       </TableRow>
-                    ) : classrooms && classrooms.length > 0 ? (
-                      classrooms.map((classroom) => (
-                        <TableRow key={classroom.id}>
-                          <TableCell>{classroom.name}</TableCell>
-                          <TableCell>{classroom.code}</TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() =>
-                                handleDeteleClassroom(classroom.id!)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoadingClassrooms ? (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center">
+                            Carregando turmas...
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center">
-                          Nenhuma turma cadastrada.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : classrooms && classrooms.length > 0 ? (
+                        classrooms.map((classroom) => (
+                          <TableRow key={classroom.id}>
+                            <TableCell>{classroom.name}</TableCell>
+                            <TableCell>{classroom.code}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() =>
+                                  handleDeteleClassroom(classroom.id!)
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center">
+                            Nenhuma turma cadastrada.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

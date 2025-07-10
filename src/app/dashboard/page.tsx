@@ -286,15 +286,15 @@ export default function DashboardPage() {
               <Loading />
             ) : (
               <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative w-full max-w-md">
+                <div className="flex flex-row flex-wrap items-center gap-4">
+                  <div className="relative flex-1 min-w-[180px] max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
                       type="text"
                       placeholder="Buscar por título, autor, resposta ou tags..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-full max-w-md"
+                      className="pl-10 flex-1"
                     />
                   </div>
                   <Button variant="outline" onClick={handleSearch}>
@@ -303,68 +303,70 @@ export default function DashboardPage() {
                 </div>
                 {recent_questions?.results.length ? (
                   <>
-                    <Table className="overflow-hidden">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                            Título
-                          </TableHead>
-                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                            Criação
-                          </TableHead>
-                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                            Tipo
-                          </TableHead>
-                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                            Resposta Correta
-                          </TableHead>
-                          <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                            Ação
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {recent_questions.results.map((question) => (
-                          <TableRow key={question.id}>
-                            <TableCell className="max-w-xs break-words whitespace-normal">
-                              {question.title}
-                            </TableCell>
-                            <TableCell className="max-w-xs break-words whitespace-normal">
-                              {new Date(question.created_at!).toLocaleDateString(
-                                "pt-BR",
-                                {
+                    <div className="overflow-x-auto w-full">
+                      <Table className="overflow-hidden min-w-[600px]">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                              Título
+                            </TableHead>
+                            <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                              Criação
+                            </TableHead>
+                            <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                              Tipo
+                            </TableHead>
+                            <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                              Resposta Correta
+                            </TableHead>
+                            <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                              Ação
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {recent_questions.results.map((question) => (
+                            <TableRow key={question.id}>
+                              <TableCell className="max-w-xs break-words whitespace-normal">
+                                {question.title}
+                              </TableCell>
+                              <TableCell className="max-w-xs break-words whitespace-normal">
+                                {new Date(
+                                  question.created_at!
+                                ).toLocaleDateString("pt-BR", {
                                   year: "numeric",
                                   month: "2-digit",
                                   day: "2-digit",
+                                })}
+                              </TableCell>
+                              <TableCell className="max-w-xs break-words whitespace-normal">
+                                {
+                                  questionType[
+                                    question.type as keyof typeof questionType
+                                  ]
                                 }
-                              )}
-                            </TableCell>
-                            <TableCell className="max-w-xs break-words whitespace-normal">
-                              {
-                                questionType[
-                                  question.type as keyof typeof questionType
-                                ]
-                              }
-                            </TableCell>
-                            <TableCell className="max-w-xs break-words whitespace-normal">
-                              {question.type === "ES"
-                                ? question.answer_text || "N/A"
-                                : question.options?.[question.answer] || "N/A"}
-                            </TableCell>
-                            <TableCell className="max-w-xs break-words whitespace-normal">
-                              <Button
-                                variant="destructive"
-                                onClick={() =>
-                                  handleDeleteQuestion(question.id as string)
-                                }
-                              >
-                                <Trash2 />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                              </TableCell>
+                              <TableCell className="max-w-xs break-words whitespace-normal">
+                                {question.type === "ES"
+                                  ? question.answer_text || "N/A"
+                                  : question.options?.[question.answer] ||
+                                    "N/A"}
+                              </TableCell>
+                              <TableCell className="max-w-xs break-words whitespace-normal">
+                                <Button
+                                  variant="destructive"
+                                  onClick={() =>
+                                    handleDeleteQuestion(question.id as string)
+                                  }
+                                >
+                                  <Trash2 />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                     <div className="flex justify-center items-center mt-4 space-x-4">
                       <Button
                         variant="outline"

@@ -35,14 +35,14 @@ export default function MainContent() {
                   nossa plataforma intuitiva e inteligente.
                 </p>
               </div>
-              <div className="space-x-4">
+              <div className="space-x-0 sm:space-x-4 flex flex-col sm:flex-row items-center">
                 <Link href="/link">
-                  <Button size="lg" className="mt-4">
+                  <Button size="lg" className="mt-4 w-full sm:w-auto">
                     Começar agora
                   </Button>
                 </Link>
                 <Link href="#features">
-                  <Button variant="outline" size="lg" className="mt-4">
+                  <Button variant="outline" size="lg" className="mt-4 w-full sm:w-auto">
                     Saiba mais
                   </Button>
                 </Link>

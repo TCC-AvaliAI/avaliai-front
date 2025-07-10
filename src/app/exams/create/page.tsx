@@ -221,7 +221,8 @@ export default function CreateExamPage() {
     } catch (error) {
       setTimeout(() => {
         setMessageAlert({
-          message: "Erro ao gerar a prova com IA. Experimente gerar novamente com outro modelo.",
+          message:
+            "Erro ao gerar a prova com IA. Experimente gerar novamente com outro modelo.",
           variant: "error",
         });
       }, 100);
@@ -429,7 +430,8 @@ export default function CreateExamPage() {
                             <Hash className="w-5 h-5" />
                             Configurações da Prova
                           </div>
-                          <div className="flex gap-20 lg:flex-row">
+
+                          <div className="flex flex-col lg:flex-row gap-6 lg:gap-20">
                             <FormField
                               control={form.control}
                               name="amountQuestions"
@@ -574,6 +576,7 @@ export default function CreateExamPage() {
                                   <RadioGroup
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
+                                    className="flex flex-col space-y-2"
                                   >
                                     <div className="flex items-center space-x-2">
                                       <RadioGroupItem value="EASY" id="d1" />
@@ -595,16 +598,16 @@ export default function CreateExamPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                           <FormField
                             control={form.control}
                             name="description"
                             render={({ field }) => (
-                              <FormItem className="mt-4">
+                              <FormItem className="mt-4 w-full">
                                 <FormLabel>Descrição/Instruções</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    className="w-[600px]"
+                                    className="w-full max-w-full min-w-0"
                                     placeholder="Instruções para a IA..."
                                     {...field}
                                   />
@@ -764,7 +767,7 @@ export default function CreateExamPage() {
                   <div className="flex justify-center">
                     <Card className="w-full">
                       <CardContent className="justify-center items-center">
-                        <div className="flex justify-around">
+                        <div className="flex flex-col sm:flex-row justify-around gap-2 w-full">
                           <Button
                             variant="outline"
                             onClick={() => addQuestion("MC")}
@@ -791,37 +794,12 @@ export default function CreateExamPage() {
                     </Card>
                   </div>
                 </div>
-
-                <div className="space-y-6">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <h3 className="font-medium mb-4">Resumo da Prova</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Total de questões:</span>
-                          <span className="text-sm font-medium">
-                            {questions.length}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm">Pontuação total:</span>
-                          <span className="text-sm font-medium">
-                            {questions.reduce(
-                              (sum, q) => sum + (q.score || 1),
-                              0
-                            )}{" "}
-                            pontos
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
               </div>
             </form>
           </Form>
         </main>
-        <AIAssistant />
+        {/* Ajuste: só aplica as classes de tela cheia no mobile quando aberto */}
+        <AIAssistant className="z-[60]" />
       </div>
     </>
   );

@@ -33,6 +33,28 @@ export function AIAssistant({ className }: AIAssistantProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth <= 768);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile && !isMinimized) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isMobile, isMinimized]);
+
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
@@ -97,13 +119,21 @@ export function AIAssistant({ className }: AIAssistantProps) {
   const getSuggestions = () => {
     return [
       "Qual foi o estopim da segunda guerra?",
-      "Como calcular a velocidade média?",
+      "Qual a formula de Bhaskara?",
+      "Como funciona a fotossíntese?",
     ];
   };
 
   if (isMinimized) {
     return (
-      <div className={cn("fixed bottom-4 right-4 z-50", className)}>
+      <div
+        className={cn(
+          isMobile
+            ? "fixed bottom-6 right-4 left-auto z-50"
+            : "fixed bottom-4 right-4 z-50",
+          className
+        )}
+      >
         <Button
           size="icon"
           className="h-12 w-12 rounded-full shadow-lg"
@@ -118,11 +148,19 @@ export function AIAssistant({ className }: AIAssistantProps) {
   return (
     <div
       className={cn(
-        "fixed bottom-4 right-4 z-50 flex flex-col w-80 h-96 bg-background border rounded-lg shadow-lg overflow-auto scrollbar-hide",
+        isMobile
+          ? "fixed inset-0 z-50 flex flex-col bg-background border-none rounded-none shadow-none w-full h-full"
+          : "fixed bottom-4 right-4 z-50 flex flex-col w-80 h-96 bg-background border rounded-lg shadow-lg overflow-auto scrollbar-hide",
         className
       )}
+      style={isMobile ? { maxWidth: "100vw", maxHeight: "100vh" } : {}}
     >
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/50">
+      <div
+        className={cn(
+          "flex items-center justify-between px-4 py-2 border-b bg-muted/50",
+          isMobile && "rounded-none"
+        )}
+      >
         <div className="flex items-center gap-2">
           <BotMessageSquare className="h-5 w-5 text-primary" />
           <h3 className="font-medium text-sm">Assistente AvaliAi</h3>
@@ -147,8 +185,8 @@ export function AIAssistant({ className }: AIAssistantProps) {
           </Button>
         </div>
       </div>
-      <ScrollArea className="flex-1">
-        <div className="flex flex-col p-2">
+      <ScrollArea className={cn("flex-1", isMobile && "px-0 py-0")}>
+        <div className={cn("flex flex-col p-2", isMobile && "p-2")}>
           <div className="flex flex-col gap-1">
             {messages.map((message) => (
               <ChatMessage
@@ -168,9 +206,31 @@ export function AIAssistant({ className }: AIAssistantProps) {
           </div>
           <div ref={messagesEndRef} className="h-px" />
         </div>
+
+        {messages.length <= 2 && isMobile && (
+          <div
+            className={cn(
+              "px-4 py-3 border-t bg-muted/30",
+              "absolute left-0 right-0 bottom-[64px] z-50"
+            )}
+            style={{ width: "100vw" }}
+          >
+            <p className="text-xs text-muted-foreground mb-2">Sugestões:</p>
+            <div className="flex flex-wrap gap-2">
+              {getSuggestions().map((suggestion, index) => (
+                <Suggestion
+                  key={index}
+                  text={suggestion}
+                  onClick={() => handleSuggestion(suggestion)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </ScrollArea>
-      {messages.length <= 2 && (
-        <div className="px-3 py-2 border-t bg-muted/30">
+
+      {messages.length <= 2 && !isMobile && (
+        <div className={cn("px-3 py-2 border-t bg-muted/30")}>
           <p className="text-xs text-muted-foreground mb-2">Sugestões:</p>
           <div className="flex flex-wrap gap-2">
             {getSuggestions().map((suggestion, index) => (
@@ -183,7 +243,14 @@ export function AIAssistant({ className }: AIAssistantProps) {
           </div>
         </div>
       )}
-      <div className="p-3 border-t">
+      <div
+        className={cn(
+          "p-3 border-t",
+          isMobile &&
+            "fixed bottom-0 left-0 right-0 bg-background border-t z-50 flex-shrink-0"
+        )}
+        style={isMobile ? { width: "100vw" } : {}}
+      >
         <div className="flex items-center gap-2">
           <Textarea
             ref={inputRef}
@@ -191,12 +258,12 @@ export function AIAssistant({ className }: AIAssistantProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Digite sua pergunta..."
-            className="min-h-9 resize-none"
-            rows={3}
+            className={cn("min-h-9 resize-none", isMobile && "w-full")}
+            rows={isMobile ? 2 : 3}
           />
           <Button
             size="icon"
-            className="h-9 w-9 shrink-0"
+            className={cn("h-9 w-9 shrink-0", isMobile && "h-12 w-12")}
             onClick={() => handleSendMessage()}
             disabled={!input.trim() || isLoading}
           >
