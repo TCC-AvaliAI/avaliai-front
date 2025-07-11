@@ -336,7 +336,7 @@ export default function DashboardPage() {
                         <TableBody>
                           {recent_questions.results.map((question) => (
                             <TableRow key={question.id}>
-                              <TableCell className="truncate flex-1">
+                              <TableCell className="max-w-[200px] truncate whitespace-nowrap overflow-hidden text-ellipsis">
                                 {question.title}
                               </TableCell>
                               <TableCell className="max-w-xs break-words whitespace-normal">
