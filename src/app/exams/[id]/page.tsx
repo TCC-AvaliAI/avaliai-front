@@ -247,9 +247,7 @@ export default function ExamDetailsPage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Coluna principal: informações gerais e listagem de questões */}
           <div className="lg:w-2/3 space-y-6 flex flex-col order-1">
-            {/* Card de informações gerais */}
             <Card className="order-1">
               <CardHeader className="pb-2">
                 <div className="flex flex-wrap gap-2 mb-2">
@@ -359,7 +357,7 @@ export default function ExamDetailsPage() {
                 </div>
               </CardFooter>
             </Card>
-            {/* Card de Resumo */}
+
             <Card className="order-2 lg:hidden">
               <CardHeader>
                 <CardTitle>Resumo</CardTitle>
@@ -400,7 +398,7 @@ export default function ExamDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-            {/* Card de Ações Rápidas */}
+
             <Card className="order-3 lg:hidden">
               <CardHeader>
                 <CardTitle>Ações Rápidas</CardTitle>
@@ -432,7 +430,7 @@ export default function ExamDetailsPage() {
                 </Button>
               </CardContent>
             </Card>
-            {/* Listagem das questões */}
+
             <Card className="order-4">
               <CardContent className="pt-6">
                 {exam.questions.map((question, index) => (
@@ -460,7 +458,9 @@ export default function ExamDetailsPage() {
                     </div>
 
                     <div>
-                      <h3 className="font-bold">Opções:</h3>
+                      <h3 className="font-bold">
+                        {question.type === "ES" ? "Resposta:" : "Opções:"}
+                      </h3>
                       {question.type === "MC" && question.options && (
                         <div className="pl-4 space-y-1 mt-2">
                           {question.options.map((option, idx) => (
@@ -520,7 +520,7 @@ export default function ExamDetailsPage() {
               </CardContent>
             </Card>
           </div>
-          {/* Coluna lateral: Resumo e Ações rápidas no desktop */}
+
           <div className="lg:w-1/3 space-y-6 hidden lg:block order-2">
             <Card>
               <CardHeader>
@@ -597,7 +597,6 @@ export default function ExamDetailsPage() {
         </div>
       </main>
 
-      {/* Dialog para QR Code */}
       <Dialog open={showQrCode} onOpenChange={setShowQrCode}>
         <DialogContent>
           <DialogHeader>

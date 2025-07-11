@@ -43,6 +43,7 @@ import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 import { set } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { NotFoundItems } from "@/components/not-found-items";
+import { QuestionDetailsModal } from "@/components/question-detail-modal";
 
 interface ExamsDetails {
   total_exams: number;
@@ -81,6 +82,9 @@ export default function DashboardPage() {
     message: "",
     variant: "success",
   });
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedQuestionDetails, setSelectedQuestionDetails] =
+    useState<QuestionProps | null>(null);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -137,6 +141,11 @@ export default function DashboardPage() {
       });
     }
   }
+
+  const handleOpenDetailsModal = (question: QuestionProps) => {
+    setSelectedQuestionDetails(question);
+    setIsDetailsModalOpen(true);
+  };
 
   if (isLoading) return <Loading />;
   return (
@@ -291,7 +300,7 @@ export default function DashboardPage() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
                       type="text"
-                      placeholder="Buscar por título, autor, resposta ou tags..."
+                      placeholder="Buscar por título da questão"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 flex-1"
@@ -346,11 +355,25 @@ export default function DashboardPage() {
                                   ]
                                 }
                               </TableCell>
-                              <TableCell className="max-w-xs break-words whitespace-normal">
-                                {question.type === "ES"
-                                  ? question.answer_text || "N/A"
-                                  : question.options?.[question.answer] ||
-                                    "N/A"}
+                              <TableCell className="max-w-[200px]">
+                                <div className="flex items-center">
+                                  <span className="truncate flex-1">
+                                    {question.type === "ES"
+                                      ? question.answer_text || "N/A"
+                                      : question.options?.[question.answer] ||
+                                        "N/A"}
+                                  </span>
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="ml-2 px-2"
+                                    onClick={() =>
+                                      handleOpenDetailsModal(question)
+                                    }
+                                  >
+                                    Ver mais
+                                  </Button>
+                                </div>
                               </TableCell>
                               <TableCell className="max-w-xs break-words whitespace-normal">
                                 <Button
@@ -365,6 +388,11 @@ export default function DashboardPage() {
                             </TableRow>
                           ))}
                         </TableBody>
+                        <QuestionDetailsModal
+                          question={selectedQuestionDetails}
+                          isOpen={isDetailsModalOpen}
+                          onClose={() => setIsDetailsModalOpen(false)}
+                        />
                       </Table>
                     </div>
                     <div className="flex justify-center items-center mt-4 space-x-4">

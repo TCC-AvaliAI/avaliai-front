@@ -36,6 +36,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { QuestionDetailsModal } from "@/components/question-detail-modal";
 
 interface QuestionsPageProps {
   count: number;
@@ -59,7 +60,16 @@ export default function QuestionBankPage() {
     useState<QuestionProps | null>(null);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedQuestionDetails, setSelectedQuestionDetails] =
+    useState<QuestionProps | null>(null);
+
   const { data: exams } = useSWR<ExamsPageProps>(`/exams/`, fetcher);
+
+  const handleOpenDetailsModal = (question: QuestionProps) => {
+    setSelectedQuestionDetails(question);
+    setIsDetailsModalOpen(true);
+  };
 
   const fetchQuestions = async (page: number, search: string, type: string) => {
     setIsLoading(true);
@@ -82,21 +92,6 @@ export default function QuestionBankPage() {
   const handleSearch = async () => {
     setCurrentPage(1);
     await fetchQuestions(1, searchTerm, typeQuestion);
-  };
-
-  const handleDeleteQuestion = async (id: string | undefined) => {
-    try {
-      await api.delete(`/questions/${id}`);
-      setMessageAlert({
-        message: "Questão excluída com sucesso!",
-        variant: "success",
-      });
-    } catch (error) {
-      setMessageAlert({
-        message: "Erro ao excluir a questão.",
-        variant: "error",
-      });
-    }
   };
 
   const handleOpenAttachModal = (question: QuestionProps) => {
@@ -147,7 +142,7 @@ export default function QuestionBankPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="text"
-                placeholder="Buscar por título, autor, resposta ou tags..."
+                placeholder="Buscar por título da questão"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full max-w-md"
@@ -161,7 +156,9 @@ export default function QuestionBankPage() {
                       <Filter className="mr-2 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">
                         {typeQuestion
-                          ? questionType[typeQuestion as keyof typeof questionType]
+                          ? questionType[
+                              typeQuestion as keyof typeof questionType
+                            ]
                           : "Tipo da questão"}
                       </span>
                     </div>
@@ -190,42 +187,42 @@ export default function QuestionBankPage() {
                 <Table className="overflow-hidden min-w-[900px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[150px] truncate text-base">
                         Autor
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[200px] truncate text-base">
                         Título
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[100px] truncate text-base">
                         Criação
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[100px] truncate text-base">
                         Tipo
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[100px] truncate text-base">
                         Criado por
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[200px] truncate text-base">
                         Resposta Correta
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
+                      <TableHead className="max-w-[150px] truncate text-base">
                         Tags
                       </TableHead>
-                      <TableHead className="max-w-xs break-words whitespace-normal text-base">
-                        Ação
+                      <TableHead className="max-w-[100px] truncate text-base">
+                        Anexar à prova
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {questionsData.results.map((question) => (
-                      <TableRow key={question.id}>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
+                      <TableRow key={question.id} className="h-16">
+                        <TableCell className="max-w-[150px] truncate">
                           {question.author_name}
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
+                        <TableCell className="max-w-[200px] truncate">
                           {question.title}
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
+                        <TableCell className="max-w-[100px] truncate">
                           {new Date(question.created_at!).toLocaleDateString(
                             "pt-BR",
                             {
@@ -235,26 +232,42 @@ export default function QuestionBankPage() {
                             }
                           )}
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
+                        <TableCell className="max-w-[100px] truncate">
                           {
                             questionType[
                               question.type as keyof typeof questionType
                             ]
                           }
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
+                        <TableCell className="max-w-[100px] truncate">
                           {question.was_generated_by_ai ? "IA" : "Você"}
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          {question.type === "ES"
-                            ? question.answer_text || "N/A"
-                            : question.options?.[question.answer] || "N/A"}
+                        <TableCell className="max-w-[200px]">
+                          <div className="flex items-center">
+                            <span className="truncate flex-1">
+                              {question.type === "ES"
+                                ? question.answer_text || "N/A"
+                                : question.options?.[question.answer] || "N/A"}
+                            </span>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="ml-2 px-2"
+                              onClick={() => handleOpenDetailsModal(question)}
+                            >
+                              Ver mais
+                            </Button>
+                          </div>
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
+                        <TableCell className="max-w-[150px]">
                           <div className="flex flex-col gap-1">
                             {question.tags.length > 0 ? (
                               question.tags.map((tag) => (
-                                <Badge variant="secondary" key={tag.name}>
+                                <Badge
+                                  variant="secondary"
+                                  key={tag.name}
+                                  className="truncate max-w-full"
+                                >
                                   {tag.name}
                                 </Badge>
                               ))
@@ -263,27 +276,22 @@ export default function QuestionBankPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="max-w-xs break-words whitespace-normal">
-                          <div className="flex gap-2">
-                            <Button
-                              variant="destructive"
-                              onClick={() =>
-                                handleDeleteQuestion(question.id as string)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => handleOpenAttachModal(question)}
-                            >
-                              <PlusCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
+                        <TableCell className="max-w-[100px]">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleOpenAttachModal(question)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
+                  <QuestionDetailsModal
+                    question={selectedQuestionDetails}
+                    isOpen={isDetailsModalOpen}
+                    onClose={() => setIsDetailsModalOpen(false)}
+                  />
                 </Table>
               </div>
               <div className="flex justify-center items-center mt-4 space-x-4">

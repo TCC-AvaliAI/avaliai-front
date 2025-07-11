@@ -610,7 +610,7 @@ export default function CreateExamPage() {
                                 <FormControl>
                                   <Textarea
                                     className="w-full max-w-full min-w-0"
-                                    placeholder="Instruções para a IA..."
+                                    placeholder="A prova deve ser feita baseado no livro..."
                                     {...field}
                                   />
                                 </FormControl>
