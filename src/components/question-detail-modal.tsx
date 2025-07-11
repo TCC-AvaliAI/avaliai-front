@@ -25,6 +25,7 @@ export function QuestionDetailsModal({
       <DialogContent
         className="
           max-w-[95vw]
+          max-h-[95vh]
         "
       >
         <DialogHeader>
