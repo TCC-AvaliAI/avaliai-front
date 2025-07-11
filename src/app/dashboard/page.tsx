@@ -336,7 +336,7 @@ export default function DashboardPage() {
                         <TableBody>
                           {recent_questions.results.map((question) => (
                             <TableRow key={question.id}>
-                              <TableCell className="truncate flex-1 block">
+                              <TableCell className="truncate flex-1">
                                 {question.title}
                               </TableCell>
                               <TableCell className="max-w-xs break-words whitespace-normal">
