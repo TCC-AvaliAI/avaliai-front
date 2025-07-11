@@ -26,6 +26,7 @@ export function QuestionDetailsModal({
         className="
           max-w-[95vw]
           max-h-[95vh]
+          overflow-y-auto
         "
       >
         <DialogHeader>

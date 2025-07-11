@@ -220,7 +220,9 @@ export default function QuestionBankPage() {
                           {question.author_name}
                         </TableCell>
                         <TableCell className="max-w-[200px] truncate">
-                          {question.title}
+                          <span className="truncate flex-1 block">
+                            {question.title}
+                          </span>
                         </TableCell>
                         <TableCell className="max-w-[100px] truncate">
                           {new Date(question.created_at!).toLocaleDateString(
