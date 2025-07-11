@@ -431,7 +431,7 @@ export default function CreateExamPage() {
                             Configurações da Prova
                           </div>
 
-                          <div className="flex flex-col lg:flex-row gap-6 lg:gap-20">
+                          <div className="flex flex-col justify-around md:flex-row gap-8">
                             <FormField
                               control={form.control}
                               name="amountQuestions"
@@ -524,42 +524,44 @@ export default function CreateExamPage() {
                                       <RadioGroupItem value="ES" id="ES" />
                                       <Label htmlFor="ES">Discurssiva</Label>
                                     </div>
-                                    <div className="flex items-center space-x-2">
+                                    <div className="flex items-start space-x-2">
                                       <RadioGroupItem
                                         value="other"
                                         id="qother"
                                       />
-                                      <Label htmlFor="qother">
-                                        Personalizado:
-                                      </Label>
-                                      <FormField
-                                        control={form.control}
-                                        name="otherTypeQuestions"
-                                        render={({ field }) => (
-                                          <Input
-                                            type="text"
-                                            className="w-60 h-8"
-                                            placeholder="Ex: Discurssiva e Multipla escolha"
-                                            disabled={
-                                              form.watch("typeQuestions") !==
-                                              "other"
-                                            }
-                                            {...field}
-                                            onClick={() => {
-                                              const radioInput =
-                                                document.getElementById(
-                                                  "qother"
-                                                ) as HTMLInputElement;
-                                              if (radioInput)
-                                                radioInput.checked = true;
-                                              form.setValue(
-                                                "typeQuestions",
+                                      <div className="flex gap-2 flex-col">
+                                        <Label htmlFor="qother">
+                                          Personalizado:
+                                        </Label>
+                                        <FormField
+                                          control={form.control}
+                                          name="otherTypeQuestions"
+                                          render={({ field }) => (
+                                            <Input
+                                              type="text"
+                                              className="w-60 h-8"
+                                              placeholder="Ex: Discurssiva e Multipla escolha"
+                                              disabled={
+                                                form.watch("typeQuestions") !==
                                                 "other"
-                                              );
-                                            }}
-                                          />
-                                        )}
-                                      />
+                                              }
+                                              {...field}
+                                              onClick={() => {
+                                                const radioInput =
+                                                  document.getElementById(
+                                                    "qother"
+                                                  ) as HTMLInputElement;
+                                                if (radioInput)
+                                                  radioInput.checked = true;
+                                                form.setValue(
+                                                  "typeQuestions",
+                                                  "other"
+                                                );
+                                              }}
+                                            />
+                                          )}
+                                        />
+                                      </div>
                                     </div>
                                   </RadioGroup>
                                   <FormMessage />
@@ -798,8 +800,7 @@ export default function CreateExamPage() {
             </form>
           </Form>
         </main>
-        {/* Ajuste: só aplica as classes de tela cheia no mobile quando aberto */}
-        <AIAssistant className="z-[60]" />
+        <AIAssistant />
       </div>
     </>
   );
