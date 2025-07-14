@@ -21,7 +21,9 @@ export function TFQuestion({
         {question.created_at && (
           <SearchTag questionId={question.id} questionTags={question.tags} />
         )}
-        <Label htmlFor={`question-${question.id}-text`}>Afirmação</Label>
+        <Label htmlFor={`question-${question.id}-text`}>
+          Afirmação <span className="text-red-500">*</span>
+        </Label>
         <Textarea
           id={`question-${question.id}-text`}
           placeholder="Digite a afirmação aqui..."
@@ -30,7 +32,9 @@ export function TFQuestion({
         />
       </div>
       <div className="space-y-2">
-        <Label>Resposta correta</Label>
+        <Label>
+          Resposta correta <span className="text-red-500">*</span>
+        </Label>
         <RadioGroup
           value={String(question.answer)}
           onValueChange={(value) =>

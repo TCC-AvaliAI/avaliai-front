@@ -51,6 +51,7 @@ import { ESQuestion } from "@/components/questions/es-question";
 import { AIAssistant } from "@/components/ai-assistant";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 type DisciplineProps = {
   id: string;
@@ -305,7 +306,10 @@ export default function CreateExamPage() {
                           name="title"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Título da Prova</FormLabel>
+                              <FormLabel>
+                                Título da Prova
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   placeholder="Ex: Avaliação de Matemática - 2º Bimestre"
@@ -326,6 +330,7 @@ export default function CreateExamPage() {
                                 <FormLabel>
                                   <BookOpen className="w-4 h-4" />
                                   Disciplina
+                                  <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -368,6 +373,7 @@ export default function CreateExamPage() {
                                 <FormLabel>
                                   <Users className="w-4 h-4" />
                                   Série/Turma
+                                  <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -410,7 +416,7 @@ export default function CreateExamPage() {
                             <FormItem className="w-full">
                               <FormLabel>
                                 <Target className="w-4 h-4 inline-block" />
-                                Tema
+                                Tema <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -437,7 +443,10 @@ export default function CreateExamPage() {
                               name="amountQuestions"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Quantidade de questões</FormLabel>
+                                  <FormLabel>
+                                    Quantidade de questões
+                                    <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <RadioGroup
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
@@ -502,7 +511,10 @@ export default function CreateExamPage() {
                               name="typeQuestions"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Tipo das questões</FormLabel>
+                                  <FormLabel>
+                                    Tipo das questões
+                                    <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <RadioGroup
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
@@ -574,7 +586,10 @@ export default function CreateExamPage() {
                               name="difficulty"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Dificuldade</FormLabel>
+                                  <FormLabel>
+                                    Dificuldade
+                                    <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <RadioGroup
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
@@ -606,7 +621,10 @@ export default function CreateExamPage() {
                             name="description"
                             render={({ field }) => (
                               <FormItem className="mt-4 w-full">
-                                <FormLabel>Descrição/Instruções</FormLabel>
+                                <FormLabel>
+                                  Descrição/Instruções
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                   <Textarea
                                     className="w-full max-w-full min-w-0"
@@ -626,7 +644,8 @@ export default function CreateExamPage() {
                               <FormItem>
                                 <FormLabel>
                                   <Sparkles className="h-4 w-4" />
-                                  Escolher modelo de IA
+                                  Escolha o modelo
+                                  <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -639,12 +658,27 @@ export default function CreateExamPage() {
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="default">
+                                      <Sparkles className="inline-block mr-2 h-4 w-4" />
                                       Gemini (Gratuito)
                                     </SelectItem>
                                     <SelectItem value="groq">
+                                      <Image
+                                        src="/groq.svg"
+                                        alt="Groq"
+                                        width={16}
+                                        height={16}
+                                        className="inline-block mr-2 h-4 w-4"
+                                      />
                                       Groq (Gratuito)
                                     </SelectItem>
                                     <SelectItem value="gpt">
+                                      <Image
+                                        src="/gpt.svg"
+                                        alt="GPT"
+                                        width={16}
+                                        height={16}
+                                        className="inline-block mr-2 h-4 w-4"
+                                      />
                                       Chatgpt 4o
                                     </SelectItem>
                                   </SelectContent>

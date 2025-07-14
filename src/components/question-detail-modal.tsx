@@ -25,14 +25,13 @@ export function QuestionDetailsModal({
       <DialogContent
         className="
           max-w-[95vw]
-          max-h-[95vh]
+          max-h-[90vh]
           overflow-y-auto
         "
       >
         <DialogHeader>
           <DialogTitle>Detalhes da Questão</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-4">
           <div>
             <h3 className="font-medium">Tags:</h3>

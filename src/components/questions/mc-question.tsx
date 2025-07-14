@@ -24,7 +24,9 @@ export function MCQuestion({
         {question.created_at && (
           <SearchTag questionId={question.id} questionTags={question.tags} />
         )}
-        <Label htmlFor={`question-${question.id}-text`}>Pergunta</Label>
+        <Label htmlFor={`question-${question.id}-text`}>
+          Pergunta <span className="text-red-500">*</span>
+        </Label>
         <Textarea
           id={`question-${question.id}-text`}
           placeholder="Digite a pergunta aqui..."
@@ -33,7 +35,9 @@ export function MCQuestion({
         />
       </div>
       <div className="space-y-2">
-        <Label>Opções</Label>
+        <Label>
+          Opções <span className="text-red-500">*</span>
+        </Label>
         {question.options.map((option, index) => (
           <div key={index} className="flex items-center space-x-2 mb-2">
             <RadioGroup

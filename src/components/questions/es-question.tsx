@@ -22,7 +22,9 @@ export function ESQuestion({
         {question.created_at && (
           <SearchTag questionId={question.id} questionTags={question.tags} />
         )}
-        <Label htmlFor={`question-${question.id}-text`}>Pergunta</Label>
+        <Label htmlFor={`question-${question.id}-text`}>
+          Pergunta <span className="text-red-500">*</span>
+        </Label>
         <Textarea
           id={`question-${question.id}-text`}
           placeholder="Digite a pergunta aqui..."
@@ -33,6 +35,7 @@ export function ESQuestion({
       <div className="space-y-2">
         <Label htmlFor={`question-${question.id}-answer`}>
           Resposta esperada (para correção)
+          <span className="text-red-500">*</span>
         </Label>
         <Textarea
           id={`question-${question.id}-answer`}
