@@ -208,7 +208,10 @@ export default function ManagementPage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Disciplina</FormLabel>
+                          <FormLabel>
+                            Nome da Disciplina
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="Ex: Matemática" {...field} />
                           </FormControl>
@@ -268,7 +271,9 @@ export default function ManagementPage() {
                       ) : disciplines && disciplines.length > 0 ? (
                         disciplines.map((discipline) => (
                           <TableRow key={discipline.id}>
-                            <TableCell className="truncate">{discipline.name}</TableCell>
+                            <TableCell className="truncate">
+                              {discipline.name}
+                            </TableCell>
                             <TableCell className="text-right">
                               <Button
                                 variant="destructive"
@@ -314,7 +319,10 @@ export default function ManagementPage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Turma</FormLabel>
+                          <FormLabel>
+                            Nome da Turma
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input
                               placeholder="Ex: 3º ano do Ensino Fundamental"
