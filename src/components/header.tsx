@@ -17,12 +17,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-interface HeaderProps {
-  message: MessageAlertProps;
-  setMessage: React.Dispatch<React.SetStateAction<MessageAlertProps>>;
-}
-
-const Header = ({ message, setMessage }: HeaderProps) => {
+const Header = () => {
   const { data: session } = useSession();
   const userName = session?.name;
   const userAvatar = session?.image;
@@ -87,7 +82,11 @@ const Header = ({ message, setMessage }: HeaderProps) => {
                 <div className="md:hidden flex items-center">
                   <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label="Abrir menu">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Abrir menu"
+                      >
                         <Menu className="h-6 w-6" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -103,7 +102,10 @@ const Header = ({ message, setMessage }: HeaderProps) => {
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setMenuOpen(false)}
+                        >
                           Dashboard
                         </Link>
                       </DropdownMenuItem>
@@ -152,15 +154,6 @@ const Header = ({ message, setMessage }: HeaderProps) => {
           </div>
         </div>
       </header>
-      {message.message && (
-        <MessageAlert
-          variant={message.variant}
-          message={message.message}
-          onDismiss={() => setMessage({ ...message, message: "" })}
-          idToRedirect={message.idToRedirect}
-          redirectText={message.redirectText}
-        />
-      )}
     </>
   );
 };

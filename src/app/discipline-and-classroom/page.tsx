@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
 import { PlusCircle, School, BookOpen, RefreshCw, Trash2 } from "lucide-react";
 import Header from "@/components/header";
 import { z } from "zod";
@@ -39,6 +38,7 @@ import {
 import api from "@/lib/axios";
 import { Discipline } from "@/@types/DisciplinesProps";
 import { Classroom } from "@/@types/ClassroomProps";
+import { useToast } from "@/components/ui/use-toast";
 
 const disciplineSchema = z.object({
   name: z.string().min(1, "O nome da disciplina é obrigatório"),
@@ -58,17 +58,13 @@ export default function ManagementPage() {
     isLoading: isLoadingDisciplines,
     mutate: mutateDisciplines,
   } = useSWR<Discipline[]>("/disciplines/", fetcher);
-
+  const { toast } = useToast();
   const {
     data: classrooms,
     isLoading: isLoadingClassrooms,
     mutate: mutateClassrooms,
   } = useSWR<Classroom[]>("/classrooms/", fetcher);
 
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
   const disciplineForm = useForm<DisciplineFormValues>({
     resolver: zodResolver(disciplineSchema),
     defaultValues: {
@@ -86,17 +82,21 @@ export default function ManagementPage() {
   async function handleDeteleDiscipline(id: string) {
     try {
       await api.delete(`/disciplines/${id}`);
-      setMessageAlert({
-        message: "Disciplina deletada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Disciplina deletada",
+        description: "A disciplina foi deletada com sucesso.",
+        variant: "default",
       });
       await mutateDisciplines(
         disciplines?.filter((discipline) => discipline.id !== id)
       );
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao deletar disciplina",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao deletar disciplina",
+        description: "Não foi possível deletar a disciplina. Tente novamente.",
+        variant: "destructive",
       });
     }
   }
@@ -104,17 +104,21 @@ export default function ManagementPage() {
   async function handleDeteleClassroom(id: string) {
     try {
       await api.delete(`/classrooms/${id}`);
-      setMessageAlert({
-        message: "Turma deletada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Turma deletada",
+        description: "A turma foi deletada com sucesso.",
+        variant: "default",
       });
       await mutateClassrooms(
         classrooms?.filter((classroom) => classroom.id !== id)
       );
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao deletar turma",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao deletar turma",
+        description: "Não foi possível deletar a turma. Tente novamente.",
+        variant: "destructive",
       });
     }
   }
@@ -122,16 +126,20 @@ export default function ManagementPage() {
   async function handleCreateDiscipline(data: DisciplineFormValues) {
     try {
       const response = await api.post("/disciplines/", data);
-      setMessageAlert({
-        message: "Disciplina criada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Disciplina criada com sucesso!",
+        description: "A disciplina foi criada com sucesso.",
+        variant: "default",
       });
       disciplines?.push(response.data);
       disciplineForm.reset();
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao criar disciplina",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao criar disciplina",
+        description: "Não foi possível criar a disciplina. Tente novamente.",
+        variant: "destructive",
       });
     }
   }
@@ -139,16 +147,20 @@ export default function ManagementPage() {
   async function handleCreateClassroom(data: ClassroomFormValues) {
     try {
       const response = await api.post("/classrooms/", data);
-      setMessageAlert({
-        message: "Turma criada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Turma criada com sucesso!",
+        description: "A turma foi criada com sucesso.",
+        variant: "default",
       });
       classrooms?.push(response.data);
       classroomForm.reset();
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao criar turma",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao criar turma",
+        description: "Não foi possível criar a turma. Tente novamente.",
+        variant: "destructive",
       });
     }
   }
@@ -169,7 +181,7 @@ export default function ManagementPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header message={messageAlert} setMessage={setMessageAlert} />
+      <Header />
       <main className="flex-1 container py-6 space-y-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight">Gerenciamento</h1>

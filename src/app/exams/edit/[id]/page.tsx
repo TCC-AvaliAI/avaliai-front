@@ -58,6 +58,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Image from "next/image";
+import { useToast } from "@/components/ui/use-toast";
 
 type DisciplineProps = {
   id: string;
@@ -84,6 +85,7 @@ const examFormSchema = z.object({
 type ExamFormValues = z.infer<typeof examFormSchema>;
 
 export default function CreateExamPage() {
+  const { toast } = useToast();
   const params = useParams();
   const examId = params.id;
   const [isLoading, setIsLoading] = useState(false);
@@ -135,11 +137,6 @@ export default function CreateExamPage() {
     }
   }, [exam, form]);
 
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
-
   const renderQuestionEditor = (question: QuestionProps) => {
     const questionComponent = {
       MC: (
@@ -173,38 +170,50 @@ export default function CreateExamPage() {
     try {
       await api.delete(`/questions/${id}`);
       removeQuestion(id);
-      setMessageAlert({
-        message: "Questão deletada com sucesso",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Questão deletada com sucesso!",
+        description: "A questão foi removida permanentemente.",
+        variant: "destructive",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao deletar a questão",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao deletar a questão",
+        description: "Não foi possível remover a questão. Tente novamente.",
+        variant: "destructive",
       });
     }
   }
+
   async function handleDetachQuestion(id: string) {
     try {
       await api.delete(`/exams/${examId}/questions/${id}`);
       removeQuestion(id);
-      setMessageAlert({
-        message: "Questão removida com sucesso",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Questão desanexada com sucesso!",
+        description: "A questão foi removida da prova.",
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao remover a questão",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao desanexar a questão",
+        description:
+          "Não foi possível remover a questão da prova. Tente novamente.",
+        variant: "destructive",
       });
     }
   }
 
   async function handleGenerateQuestionByAI(data: ExamFormValues) {
     if (!data.theme || !data.title)
-      return setMessageAlert({
-        message: "Os campos tema e título são obrigatórios.",
-        variant: "error",
+      return toast({
+        duration: 10000,
+        title: "Erro",
+        description: "O tema e o título da prova são obrigatórios.",
+        variant: "destructive",
       });
     setIsLoading(true);
     const payload = {
@@ -225,14 +234,19 @@ export default function CreateExamPage() {
         ...questions,
       ];
       setQuestions(newQuestions);
-      setMessageAlert({
-        message: "Questão gerada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Questão gerada com sucesso!",
+        description: "A questão foi adicionada à lista de questões.",
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao gerar a questão com IA.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao gerar questão com IA",
+        description:
+          "Não foi possível gerar a questão. Verifique os dados e tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -251,14 +265,18 @@ export default function CreateExamPage() {
       };
       console.log("payload", payload);
       await api.put(`/exams/${examId}`, payload);
-      setMessageAlert({
-        message: "Prova gerada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Prova gerada com sucesso!",
+        description: "As informações da prova foram salvas.",
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao gerar a prova.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao gerar a prova",
+        description: "Não foi possível gerar a prova. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -276,14 +294,18 @@ export default function CreateExamPage() {
         score: question.score,
         type: question.type,
       });
-      setMessageAlert({
-        message: "Questão atualizada com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Questão atualizada com sucesso!",
+        description: "As informações da questão foram salvas.",
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao atualizar a questão.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao atualizar a questão",
+        description: "Não foi possível atualizar a questão. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -301,14 +323,19 @@ export default function CreateExamPage() {
         not_attached: false,
       }));
       setQuestions(updatedQuestions);
-      setMessageAlert({
-        message: "Questão anexada à prova com sucesso!",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Questão anexada à prova com sucesso!",
+        description: "A questão foi adicionada à prova.",
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao anexar a questão à prova.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao anexar a questão à prova",
+        description:
+          "Não foi possível anexar a questão à prova. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -318,7 +345,7 @@ export default function CreateExamPage() {
   return (
     <>
       <div className="flex min-h-screen flex-col">
-        <Header message={messageAlert} setMessage={setMessageAlert} />
+        <Header />
         {isLoading && <Loading showText={true} />}
         <main className="flex-1 container py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">

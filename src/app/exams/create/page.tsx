@@ -26,6 +26,7 @@ import {
   FileText,
   Hash,
   Key,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import Header from "@/components/header";
 import { QuestionProps, QuestionType } from "@/@types/QuestionProps";
@@ -42,7 +43,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
 import { Loading } from "@/components/loading/page";
 import { MCQuestion } from "@/components/questions/mc-question";
@@ -52,6 +52,7 @@ import { AIAssistant } from "@/components/ai-assistant";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { useToast } from "@/components/ui/use-toast";
 
 type DisciplineProps = {
   id: string;
@@ -112,6 +113,7 @@ const examFormSchema = z
 type ExamFormValues = z.infer<typeof examFormSchema>;
 
 export default function CreateExamPage() {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const {
     questions,
@@ -141,11 +143,6 @@ export default function CreateExamPage() {
       typeQuestions: "MC",
       otherTypeQuestions: "",
     },
-  });
-
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
   });
 
   const renderQuestionEditor = (question: QuestionProps) => {
@@ -210,21 +207,27 @@ export default function CreateExamPage() {
       form.setValue("otherAmountQuestions", "");
       form.setValue("otherTypeQuestions", "");
       const exam = response.data;
-      setTimeout(() => {
-        setMessageAlert({
-          message:
-            "Prova gerada com sucesso! Clique no ícone para visualizá-la",
-          variant: "success",
-          idToRedirect: exam.id,
-          redirectText: "Ver Prova",
-        });
-      }, 100);
+      toast({
+        duration: 10000,
+        title: "Prova gerada com sucesso!",
+        description: "Clique no ícone para visualizá-la",
+        variant: "default",
+        action: (
+          <Button
+            onClick={() => (window.location.href = `/exams/${exam.id}`)}
+            variant="ghost"
+          >
+            <SquareArrowOutUpRight className="h-4 w-4" />
+          </Button>
+        ),
+      });
     } catch (error) {
       setTimeout(() => {
-        setMessageAlert({
-          message:
-            "Erro ao gerar a prova com IA. Experimente gerar novamente com outro modelo.",
-          variant: "error",
+        toast({
+          duration: 10000,
+          title: "Erro ao gerar a prova.",
+          description: "Verifique os dados e tente novamente.",
+          variant: "destructive",
         });
       }, 100);
     } finally {
@@ -258,31 +261,39 @@ export default function CreateExamPage() {
       form.setValue("otherAmountQuestions", "");
       form.setValue("otherTypeQuestions", "");
       const exam = response.data;
-      setTimeout(() => {
-        setMessageAlert({
-          message:
-            "Prova gerada com sucesso! Clique no ícone para visualizá-la",
-          variant: "success",
-          idToRedirect: exam.id,
-          redirectText: "Ver Prova",
-        });
-      }, 100);
+      toast({
+        duration: 10000,
+        title: "Prova criada com sucesso!",
+        description: "Clique no ícone para visualizá-la",
+        variant: "default",
+        action: (
+          <Button
+            onClick={() => (window.location.href = `/exams/${exam.id}`)}
+            variant="ghost"
+          >
+            <SquareArrowOutUpRight className="h-4 w-4" />
+          </Button>
+        ),
+      });
     } catch (error) {
       setTimeout(() => {
-        setMessageAlert({
-          message: "Erro ao gerar a prova.",
-          variant: "error",
+        toast({
+          duration: 10000,
+          title: "Erro ao gerar a prova.",
+          description: "Verifique os dados e tente novamente.",
+          variant: "destructive",
         });
       }, 100);
     } finally {
       setIsLoading(false);
     }
   }
+
   return (
     <>
       {isLoading && <Loading showText={isLoading} />}
       <div className="flex min-h-screen flex-col">
-        <Header message={messageAlert} setMessage={setMessageAlert} />
+        <Header />
         <main className="flex-1 container py-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold tracking-tight">

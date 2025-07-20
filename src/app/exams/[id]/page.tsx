@@ -8,12 +8,10 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -44,7 +42,7 @@ import useSWR from "swr";
 import { Loading } from "@/components/loading/page";
 import QRCode from "react-qr-code";
 import api from "@/lib/axios";
-import { MessageAlertProps } from "@/components/message-alert";
+import { useToast } from "@/components/ui/use-toast";
 
 const renderStatusBadge = (status: ExamStatus | undefined) => {
   if (!status) return null;
@@ -105,6 +103,7 @@ export default function ExamDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const examId = params.id as string;
+  const { toast } = useToast();
 
   const {
     data: exam,
@@ -116,10 +115,6 @@ export default function ExamDetailsPage() {
   const [examStatus, setExamStatus] = useState<ExamStatus | undefined>(
     exam?.status
   );
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
 
   if (isLoading || !exam) return <Loading />;
 
@@ -130,18 +125,19 @@ export default function ExamDetailsPage() {
       await api.patch(`/exams/${examId}/qrcode/`, {
         qr_code,
       });
-      setMessageAlert({
-        message: "QR Code gerado com sucesso.",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "QR Code gerado com sucesso",
+        description: "O QR Code foi atualizado.",
+        variant: "default",
       });
-      if (exam) {
-        mutate({ ...exam, qr_code } as Exam, false);
-      }
+      if (exam) mutate({ ...exam, qr_code } as Exam, false);
     } catch (error) {
-      setMessageAlert({
-        message:
-          "Erro ao gerar QR Code. Possivelmente a prova já possui um QR Code gerado.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao gerar QR Code",
+        description: "O QR Code não foi gerado.",
+        variant: "destructive",
       });
     }
   }
@@ -158,62 +154,45 @@ export default function ExamDetailsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      setMessageAlert({
-        message: "Prova baixada com sucesso.",
-        variant: "success",
+      toast({
+        duration: 10000,
+        title: "Prova baixada com sucesso",
+        description: "A prova foi baixada como um arquivo PDF.",
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao baixar a prova. Experimente gerar o QR Code.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao baixar a prova",
+        description: "Não foi possível baixar a prova.",
+        variant: "destructive",
       });
     }
   }
 
-  async function handleMarkAsApplied() {
+  async function handleSetExamStatus(status: "apply" | "archive" | "cancel") {
+    const examStatus = {
+      apply: "Aplicada",
+      archive: "Arquivada",
+      cancel: "Cancelada",
+    };
     try {
-      await api.patch(`/exams/${examId}/apply/`);
-      setExamStatus("Aplicada");
-      setMessageAlert({
-        message: "Prova marcada como aplicada com sucesso.",
-        variant: "success",
+      await api.patch(`/exams/${examId}/${status}/`);
+      setExamStatus(examStatus[status] as ExamStatus);
+      toast({
+        duration: 10000,
+        title: "Status da prova atualizado",
+        description: `A prova foi marcada como ${examStatus[
+          status
+        ].toLowerCase()}.`,
+        variant: "default",
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao marcar a prova como aplicada.",
-        variant: "error",
-      });
-    }
-  }
-
-  async function handleMArkAsArchived() {
-    try {
-      await api.patch(`/exams/${examId}/archive/`);
-      setExamStatus("Arquivada");
-      setMessageAlert({
-        message: "Prova arquivada com sucesso.",
-        variant: "success",
-      });
-    } catch (error) {
-      setMessageAlert({
-        message: "Erro ao arquivar a prova.",
-        variant: "error",
-      });
-    }
-  }
-
-  async function handleMarkAsCancelled() {
-    try {
-      await api.patch(`/exams/${examId}/cancel/`);
-      setExamStatus("Cancelada");
-      setMessageAlert({
-        message: "Prova cancelada com sucesso.",
-        variant: "success",
-      });
-    } catch (error) {
-      setMessageAlert({
-        message: "Erro ao cancelar a prova.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao atualizar o status da prova",
+        description: "Não foi possível atualizar o status da prova.",
+        variant: "destructive",
       });
     }
   }
@@ -225,16 +204,19 @@ export default function ExamDetailsPage() {
         router.push("/exams");
       }
     } catch (error: any) {
-      setMessageAlert({
-        message: error.response?.data?.detail || "Erro ao excluir a prova.",
-        variant: "error",
+      toast({
+        duration: 10000,
+        title: "Erro ao excluir a prova",
+        description:
+          error.response?.data?.detail || "Não foi possível excluir a prova.",
+        variant: "destructive",
       });
     }
   }
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header message={messageAlert} setMessage={setMessageAlert} />
+      <Header />
       <main className="flex-1 container py-6">
         <div className="flex flex-col gap-2 mb-6 sm:flex-row sm:items-center">
           <Link href="/exams">
@@ -333,7 +315,7 @@ export default function ExamDetailsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleMArkAsArchived}
+                    onClick={handleSetExamStatus.bind(null, "archive")}
                   >
                     <Archive className="mr-2 h-4 w-4" />
                     Arquivar
@@ -341,7 +323,7 @@ export default function ExamDetailsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleMarkAsCancelled}
+                    onClick={handleSetExamStatus.bind(null, "cancel")}
                   >
                     <SquareX className="mr-2 h-4 w-4" />
                     Cancelar
@@ -423,7 +405,7 @@ export default function ExamDetailsPage() {
                 <Button
                   className="w-full justify-start"
                   variant="outline"
-                  onClick={handleMarkAsApplied}
+                  onClick={handleSetExamStatus.bind(null, "apply")}
                 >
                   <FileCheck className="mr-2 h-4 w-4" />
                   Marcar como Aplicada
@@ -586,7 +568,7 @@ export default function ExamDetailsPage() {
                 <Button
                   className="w-full justify-start"
                   variant="outline"
-                  onClick={handleMarkAsApplied}
+                  onClick={handleSetExamStatus.bind(null, "apply")}
                 >
                   <FileCheck className="mr-2 h-4 w-4" />
                   Marcar como Aplicada

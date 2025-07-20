@@ -39,11 +39,10 @@ import { Loading } from "@/components/loading/page";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import api from "@/lib/axios";
-import { MessageAlert, MessageAlertProps } from "@/components/message-alert";
-import { set } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { NotFoundItems } from "@/components/not-found-items";
 import { QuestionDetailsModal } from "@/components/question-detail-modal";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ExamsDetails {
   total_exams: number;
@@ -78,14 +77,10 @@ export default function DashboardPage() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedQuestionDetails, setSelectedQuestionDetails] =
     useState<QuestionProps | null>(null);
-
+  const { toast } = useToast();
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -110,9 +105,11 @@ export default function DashboardPage() {
       const searchResults = response.data as RecentQuestionsProps;
       mutateQuestions(searchResults, false);
     } catch (error) {
-      setMessageAlert({
-        message: "Não encontramos questões com esse termo",
-        variant: "error",
+      toast({
+        title: "Erro ao buscar questões",
+        description: "Não foi possível realizar a busca. Tente novamente.",
+        variant: "destructive",
+        duration: 10000,
       });
       setCurrentPage(1);
     }
@@ -130,14 +127,18 @@ export default function DashboardPage() {
         } as unknown as RecentQuestionsProps,
         false
       );
-      setMessageAlert({
-        message: "Questão deletada com sucesso",
-        variant: "success",
+      toast({
+        title: "Questão deletada",
+        description: "A questão foi deletada com sucesso.",
+        variant: "default",
+        duration: 10000,
       });
     } catch (error) {
-      setMessageAlert({
-        message: "Erro ao deletar a questão",
-        variant: "error",
+      toast({
+        title: "Erro ao deletar questão",
+        description: "Não foi possível deletar a questão. Tente novamente.",
+        variant: "destructive",
+        duration: 10000,
       });
     }
   }
@@ -150,7 +151,7 @@ export default function DashboardPage() {
   if (isLoading) return <Loading />;
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
-      <Header message={messageAlert} setMessage={setMessageAlert} />
+      <Header />
       <main className="flex-1 container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>

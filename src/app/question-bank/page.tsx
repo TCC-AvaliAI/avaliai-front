@@ -37,6 +37,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { QuestionDetailsModal } from "@/components/question-detail-modal";
+import { useToast } from "@/components/ui/use-toast";
 
 interface QuestionsPageProps {
   count: number;
@@ -52,10 +53,6 @@ export default function QuestionBankPage() {
   const [questionsData, setQuestionsData] = useState<QuestionsPageProps | null>(
     null
   );
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
   const [selectedQuestion, setSelectedQuestion] =
     useState<QuestionProps | null>(null);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
@@ -63,7 +60,7 @@ export default function QuestionBankPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedQuestionDetails, setSelectedQuestionDetails] =
     useState<QuestionProps | null>(null);
-
+  const { toast } = useToast();
   const { data: exams } = useSWR<ExamsPageProps>(`/exams/`, fetcher);
 
   const handleOpenDetailsModal = (question: QuestionProps) => {
@@ -100,16 +97,21 @@ export default function QuestionBankPage() {
   };
 
   const handleAttachSuccess = () => {
-    setMessageAlert({
-      message: "Questão anexada com sucesso!",
-      variant: "success",
+    toast({
+      duration: 10000,
+      title: "Questão anexada com sucesso!",
+      description: "A questão foi adicionada à prova.",
+      variant: "default",
     });
   };
 
   const handleAttachError = () => {
-    setMessageAlert({
-      message: "Erro ao anexar questão.",
-      variant: "error",
+    toast({
+      duration: 10000,
+      title: "Erro ao anexar questão",
+      description:
+        "Não foi possível anexar a questão à prova. Tente novamente.",
+      variant: "destructive",
     });
   };
 
@@ -128,7 +130,7 @@ export default function QuestionBankPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header message={messageAlert} setMessage={setMessageAlert} />
+      <Header />
       <main className="flex-1 container py-6">
         <div className="flex flex-col gap-10">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

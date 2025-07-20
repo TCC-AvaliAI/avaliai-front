@@ -27,7 +27,6 @@ import { fetcher } from "@/lib/fetcher";
 import { ExamActionsMenu } from "@/components/exam/exam-actions-menu";
 import { DifficultyLevel, Exam, ExamStatus } from "@/@types/ExamProps";
 import { Loading } from "@/components/loading/page";
-import { MessageAlertProps } from "@/components/message-alert";
 import api from "@/lib/axios";
 import { NotFoundItems } from "@/components/not-found-items";
 
@@ -41,10 +40,6 @@ export interface ExamsPageProps {
 export default function ExamsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [messageAlert, setMessageAlert] = useState<MessageAlertProps>({
-    message: "",
-    variant: "success",
-  });
   const {
     data: exams,
     isLoading,
@@ -118,7 +113,7 @@ export default function ExamsPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header message={messageAlert} setMessage={setMessageAlert} />
+      <Header />
       <main className="flex-1 container py-6">
         {isLoading ? (
           <Loading />
